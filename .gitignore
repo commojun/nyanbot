@@ -13,3 +13,6 @@
 
 # for config
 config.yml
+
+# for deps
+vendor

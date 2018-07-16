@@ -1,12 +1,13 @@
-package main
+package nyanbot
 
 import (
-	"github.com/line/line-bot-sdk-go/linebot"
 	yaml "gopkg.in/yaml.v2"
 	"io/ioutil"
 	"log"
 	"os/user"
 )
+
+var configFile = "/.config/nyanbot/config.yml"
 
 type Config struct {
 	ChannelSecret      string `yaml:"channel_secret"`
@@ -14,13 +15,13 @@ type Config struct {
 	RoomId             string `yaml:"room_id"`
 }
 
-func main() {
+func LoadConfig() Config {
 	u, err := user.Current()
 	if err != nil {
 		log.Fatal(err)
 	}
 
-	buf, err := ioutil.ReadFile(u.HomeDir + "/.config/nyanbot/config.yml")
+	buf, err := ioutil.ReadFile(u.HomeDir + configFile)
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -31,11 +32,5 @@ func main() {
 		log.Fatal(err)
 	}
 
-	bot, err := linebot.New(config.ChannelSecret, config.ChannelAccessToken)
-	if err != nil {
-	}
-
-	bot.PushMessage(config.RoomId, linebot.NewTextMessage("ニャンだよ")).Do()
-	if err != nil {
-	}
+	return config
 }
