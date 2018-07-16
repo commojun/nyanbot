@@ -4,16 +4,14 @@ BINARY_NAME=$(PROJECT_NAME)
 
 all: test build
 build:
-	cd $(BUNARY_DIR)
-	go build -o $(BINARY_NAME) -v
+	cd $(BINARY_DIR) && go build $(BINARY_NAME).go
 test:
-	go test -v ./...
+	go test
 clean:
 	go clean
 	rm -f $(BINARY_DIR)/$(BINARY_NAME)
-run:
-	build
-	./$(BINARY_NAME)
+run: build
+	cd $(BINARY_DIR) && ./$(BINARY_NAME)
 deps:
 	go get github.com/golang/dep/cmd/dep
 	dep ensure
