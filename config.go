@@ -1,19 +1,21 @@
 package nyanbot
 
 import (
-	yaml "gopkg.in/yaml.v2"
 	"io/ioutil"
 	"log"
 	"os/user"
+
+	yaml "gopkg.in/yaml.v2"
 )
 
-var configFile = "/.config/nyanbot/config.yml"
-
 type Config struct {
-	ChannelSecret      string `yaml:"channel_secret"`
-	ChannelAccessToken string `yaml:"channel_access_token"`
-	RoomId             string `yaml:"room_id"`
+	ChannelSecret      string            `yaml:"channel_secret"`
+	ChannelAccessToken string            `yaml:"channel_access_token"`
+	RoomId             string            `yaml:"room_id"`
+	CsvFilePath        map[string]string `yaml:"csv_file_path"`
 }
+
+var configFile = "/.config/nyanbot/config.yml"
 
 func LoadConfig() Config {
 	u, err := user.Current()

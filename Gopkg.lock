@@ -2,6 +2,14 @@
 
 
 [[projects]]
+  digest = "1:ca5c40831ee5501393a9603cac61740704deb30df14c8e4db8ea18fe48ba9059"
+  name = "github.com/jszwec/csvutil"
+  packages = ["."]
+  pruneopts = "UT"
+  revision = "d0aa9ba021580d41156e5f51a4eb3fd78ff916ee"
+  version = "v1.1.1"
+
+[[projects]]
   digest = "1:43182d691beef5be7aab7602e173e1d7972d6836633eb1cf42e71bb3d56caf5b"
   name = "github.com/line/line-bot-sdk-go"
   packages = ["linebot"]
@@ -21,6 +29,7 @@
   analyzer-name = "dep"
   analyzer-version = 1
   input-imports = [
+    "github.com/jszwec/csvutil",
     "github.com/line/line-bot-sdk-go/linebot",
     "gopkg.in/yaml.v2",
   ]
