@@ -9,10 +9,11 @@ import (
 )
 
 type Config struct {
-	ChannelSecret      string            `yaml:"channel_secret"`
-	ChannelAccessToken string            `yaml:"channel_access_token"`
-	RoomId             string            `yaml:"room_id"`
-	CsvFilePath        map[string]string `yaml:"csv_file_path"`
+	ChannelSecret      string `yaml:"channel_secret"`
+	ChannelAccessToken string `yaml:"channel_access_token"`
+	RoomId             string `yaml:"room_id"`
+	CsvFileDir         string `yaml:"csv_file_dir"`
+	BaseMinuteDuration int    `yaml:"base_minute_duration"`
 }
 
 var configFile = "/.config/nyanbot/config.yml"
