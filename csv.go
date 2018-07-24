@@ -7,7 +7,7 @@ import (
 	"github.com/jszwec/csvutil"
 )
 
-type PushMessgae struct {
+type PushMessage struct {
 	ID         int    `csv:"id"`
 	Minute     string `csv:"minute"`
 	Hour       string `csv:"hour"`
@@ -18,8 +18,8 @@ type PushMessgae struct {
 	Message    string `csv:"message"`
 }
 
-func LoadPushMessages() []PushMessgae {
-	var pmsgs []PushMessgae
+func LoadPushMessages() []PushMessage {
+	var pmsgs []PushMessage
 
 	config := LoadConfig()
 

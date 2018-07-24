@@ -9,7 +9,7 @@ import (
 	"github.com/line/line-bot-sdk-go/linebot"
 )
 
-func CanSendPushMessage(pmsg PushMessgae) bool {
+func CanSendPushMessage(pmsg PushMessage) bool {
 
 	config := LoadConfig()
 	// 現在の日付時刻を取得
@@ -43,8 +43,8 @@ func CanSendPushMessage(pmsg PushMessgae) bool {
 		m1 := now.Minute()
 		m2 := now.Add(time.Duration(-d) * time.Minute).Minute()
 		// 過去d分間を見て当てはまらなかったらfalse
-		if (fignum < (m1-d) && m1 < fignum) &&
-			(fignum < m2 && (m2+d) < fignum) {
+		if (fignum < (m1-d) || m1 < fignum) &&
+			(fignum < m2 || (m2+d) < fignum) {
 			fmt.Printf("false because not match ( %d <= %d <= %d ) \n", m2, fignum, m1)
 			return false
 		}
