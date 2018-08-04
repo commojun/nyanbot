@@ -9,11 +9,9 @@ import (
 	"github.com/line/line-bot-sdk-go/linebot"
 )
 
-func CanSendPushMessage(pmsg PushMessage) bool {
+func CanSendPushMessage(pmsg PushMessage, now time.Time) bool {
 
 	config := LoadConfig()
-	// 現在の日付時刻を取得
-	now := time.Now()
 	weekNum := (int(now.Day()) / 7) + 1
 
 	figs := []string{pmsg.Month, pmsg.WeekNum, pmsg.DayOfWeek, pmsg.DayOfMonth, pmsg.Hour}
@@ -63,7 +61,7 @@ func SendPushMessage() {
 	}
 
 	for _, pmsg := range pmsgs {
-		if CanSendPushMessage(pmsg) == false {
+		if CanSendPushMessage(pmsg, time.Now()) == false {
 			continue
 		}
 		bot.PushMessage(config.RoomId, linebot.NewTextMessage(pmsg.Message)).Do()
