@@ -2,7 +2,6 @@ package nyanbot
 
 import (
 	"io/ioutil"
-	"log"
 	"strconv"
 	"testing"
 	"time"
@@ -18,41 +17,50 @@ type PushMessageTestCase struct {
 	Expected    bool
 }
 
-func LoadPushMessageCase() []PushMessageTestCase {
-	config := LoadConfig()
+func LoadPushMessageCase() ([]PushMessageTestCase, error) {
+	config, err := LoadConfig()
+	if err != nil {
+		return []PushMessageTestCase{}, err
+	}
 
 	b, err := ioutil.ReadFile(config.CsvFileDir + "push_message_test.csv")
 	if err != nil {
-		log.Fatal(err)
+		return []PushMessageTestCase{}, err
 	}
 
 	var cases []PushMessageTestCase
 	err = csvutil.Unmarshal(b, &cases)
 	if err != nil {
-		log.Fatal(err)
+		return []PushMessageTestCase{}, err
 	}
 
 	//stringから各構造へ
 	for i, c := range cases {
 		cases[i].Time, err = JSTParse(c.TimeStr)
 		if err != nil {
-			log.Fatal(err)
+			return []PushMessageTestCase{}, err
 		}
 		cases[i].Expected, err = strconv.ParseBool(c.ExpectedStr)
 		if err != nil {
-			log.Fatal(err)
+			return []PushMessageTestCase{}, err
 		}
 	}
 
-	return cases
+	return cases, nil
 }
 
 func TestCanSendPushMessage(t *testing.T) {
-	cases := LoadPushMessageCase()
+	cases, err := LoadPushMessageCase()
+	if err != nil {
+		t.Fatal(err)
+	}
 
 	for _, c := range cases {
 		pmsg := c.PushMessage
-		result := CanSendPushMessage(pmsg, c.Time)
+		result, err := CanSendPushMessage(pmsg, c.Time)
+		if err != nil {
+			t.Fatal(err)
+		}
 		if result != c.Expected {
 			t.Fatalf("result is %t, but expected is %t for id %d", result, c.Expected, c.ID)
 		}
