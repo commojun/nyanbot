@@ -2,7 +2,6 @@ package nyanbot
 
 import (
 	"io/ioutil"
-	"log"
 
 	"github.com/jszwec/csvutil"
 )
@@ -18,20 +17,23 @@ type PushMessage struct {
 	Message    string `csv:"message"`
 }
 
-func LoadPushMessages() []PushMessage {
+func LoadPushMessages() ([]PushMessage, error) {
 	var pmsgs []PushMessage
 
-	config := LoadConfig()
+	config, err := LoadConfig()
+	if err != nil {
+		return []PushMessage{}, err
+	}
 
 	b, err := ioutil.ReadFile(config.CsvFileDir + "push_message.csv")
 	if err != nil {
-		log.Fatal(err)
+		return []PushMessage{}, err
 	}
 
 	err = csvutil.Unmarshal(b, &pmsgs)
 	if err != nil {
-		log.Fatal(err)
+		return []PushMessage{}, err
 	}
 
-	return pmsgs
+	return pmsgs, nil
 }

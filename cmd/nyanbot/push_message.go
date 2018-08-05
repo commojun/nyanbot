@@ -1,7 +1,14 @@
 package main
 
-import "github.com/junpooooow/nyanbot"
+import (
+	"log"
+
+	"github.com/junpooooow/nyanbot"
+)
 
 func main() {
-	nyanbot.SendPushMessage()
+	err := nyanbot.SendPushMessage()
+	if err != nil {
+		log.Fatal(err)
+	}
 }

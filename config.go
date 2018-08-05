@@ -2,7 +2,6 @@ package nyanbot
 
 import (
 	"io/ioutil"
-	"log"
 	"os/user"
 
 	yaml "gopkg.in/yaml.v2"
@@ -18,22 +17,22 @@ type Config struct {
 
 var configFile = "/.config/nyanbot/config.yml"
 
-func LoadConfig() Config {
+func LoadConfig() (Config, error) {
 	u, err := user.Current()
 	if err != nil {
-		log.Fatal(err)
+		return Config{}, err
 	}
 
 	buf, err := ioutil.ReadFile(u.HomeDir + configFile)
 	if err != nil {
-		log.Fatal(err)
+		return Config{}, err
 	}
 
 	var config Config
 	err = yaml.Unmarshal(buf, &config)
 	if err != nil {
-		log.Fatal(err)
+		return Config{}, err
 	}
 
-	return config
+	return config, nil
 }
