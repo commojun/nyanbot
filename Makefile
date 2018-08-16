@@ -10,4 +10,4 @@ deps:
 install:
 	go install ./$(CMD)/$(PUSH)
 	@echo 'please add following crontab'
-	@echo '*/5 * * * * nyanpush --config="/path/to/your/config.yml"'
+	@echo '*/5 * * * * path/to/nyanpush --config="/path/to/your/config.yml"'
