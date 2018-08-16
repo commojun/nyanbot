@@ -1,17 +1,13 @@
 PROJECT_NAME=nyanbot
-BINARY_DIR=cmd/$(PROJECT_NAME)
-BINARY_NAME=$(PROJECT_NAME)
+CMD=cmd
+PUSH=nyanpush
 
-all: test build
-build:
-	cd $(BINARY_DIR) && go build $(BINARY_NAME).go
 test:
 	go test
-clean:
-	go clean
-	rm -f $(BINARY_DIR)/$(BINARY_NAME)
-run: build
-	cd $(BINARY_DIR) && ./$(BINARY_NAME)
 deps:
 	go get github.com/golang/dep/cmd/dep
 	dep ensure
+install:
+	go install ./$(CMD)/$(PUSH)
+	@echo 'please add following crontab'
+	@echo '*/5 * * * * nyanpush --config="/path/to/your/config.yml"'
