@@ -17,6 +17,8 @@ type PushMessage struct {
 	Message    string `csv:"message"`
 }
 
+var samplePushMessageCSV = projectRoot + "csv/push_message_sample.csv"
+
 func LoadPushMessages() ([]PushMessage, error) {
 	var pmsgs []PushMessage
 
@@ -25,7 +27,11 @@ func LoadPushMessages() ([]PushMessage, error) {
 		return []PushMessage{}, err
 	}
 
-	b, err := ioutil.ReadFile(config.CsvFileDir + "push_message.csv")
+	path := samplePushMessageCSV
+	if config.CsvFileDir != "" {
+		path = config.CsvFileDir + "push_message.csv"
+	}
+	b, err := ioutil.ReadFile(path)
 	if err != nil {
 		return []PushMessage{}, err
 	}

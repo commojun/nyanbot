@@ -18,12 +18,7 @@ type PushMessageTestCase struct {
 }
 
 func LoadPushMessageCase() ([]PushMessageTestCase, error) {
-	config, err := LoadConfig()
-	if err != nil {
-		return []PushMessageTestCase{}, err
-	}
-
-	b, err := ioutil.ReadFile(config.CsvFileDir + "push_message_test.csv")
+	b, err := ioutil.ReadFile(projectRoot + "csv/push_message_test.csv")
 	if err != nil {
 		return []PushMessageTestCase{}, err
 	}

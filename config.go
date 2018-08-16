@@ -2,7 +2,7 @@ package nyanbot
 
 import (
 	"io/ioutil"
-	"os/user"
+	"os"
 
 	yaml "gopkg.in/yaml.v2"
 )
@@ -15,15 +15,13 @@ type Config struct {
 	BaseMinuteDuration int    `yaml:"base_minute_duration"`
 }
 
-var configFile = "/.config/nyanbot/config.yml"
+var projectRoot = os.Getenv("GOPATH") + "/src/github.com/junpooooow/nyanbot/"
+
+// デフォルトではテスト用の設定ファイルを参照
+var ConfigFile = projectRoot + "config/config_test.yml"
 
 func LoadConfig() (Config, error) {
-	u, err := user.Current()
-	if err != nil {
-		return Config{}, err
-	}
-
-	buf, err := ioutil.ReadFile(u.HomeDir + configFile)
+	buf, err := ioutil.ReadFile(ConfigFile)
 	if err != nil {
 		return Config{}, err
 	}

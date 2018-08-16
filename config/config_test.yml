@@ -1,0 +1,3 @@
+# これを変更する場合、crontabの設定も変更する必要がある
+base_minute_duration: 5
+

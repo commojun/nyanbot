@@ -1,5 +1,0 @@
-# please set this file on ~/.config/nyanbot/config.yml
-
-channel_secret: "secret"
-channel_access_token: "token"
-room_id: "id"
