@@ -22,8 +22,6 @@ func main() {
 		nyanbot.ConfigFile = opts.Config
 	}
 
-	log.Print(nyanbot.ConfigFile)
-
 	err = nyanbot.SendPushMessage()
 	if err != nil {
 		log.Fatal(err)
