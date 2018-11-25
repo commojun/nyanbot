@@ -5,6 +5,7 @@ import (
 
 	"github.com/commojun/nyanbot"
 	flags "github.com/jessevdk/go-flags"
+	"github.com/line/line-bot-sdk-go/linebot"
 )
 
 type Options struct {
@@ -22,7 +23,17 @@ func main() {
 		nyanbot.ConfigFile = opts.Config
 	}
 
-	err = nyanbot.SendPushMessage()
+	_, err = nyanbot.LoadConfig()
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	bot, err := linebot.New(nyanbot.Conf.ChannelSecret, nyanbot.Conf.ChannelAccessToken)
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	bot.PushMessage(nyanbot.Conf.RoomId, linebot.NewTextMessage("Hello nyan!")).Do()
 	if err != nil {
 		log.Fatal(err)
 	}

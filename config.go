@@ -15,10 +15,13 @@ type Config struct {
 	BaseMinuteDuration int    `yaml:"base_minute_duration"`
 }
 
-var projectRoot = os.Getenv("GOPATH") + "/src/github.com/junpooooow/nyanbot/"
+var projectRoot = os.Getenv("GOPATH") + "/src/github.com/commojun/nyanbot/"
 
 // デフォルトではテスト用の設定ファイルを参照
 var ConfigFile = projectRoot + "config/config_test.yml"
+
+// グローバル変数に設定を入れる
+var Conf = Config{}
 
 func LoadConfig() (Config, error) {
 	buf, err := ioutil.ReadFile(ConfigFile)
@@ -26,11 +29,13 @@ func LoadConfig() (Config, error) {
 		return Config{}, err
 	}
 
-	var config Config
-	err = yaml.Unmarshal(buf, &config)
+	var conf Config
+	err = yaml.Unmarshal(buf, &conf)
 	if err != nil {
 		return Config{}, err
 	}
 
-	return config, nil
+	Conf = conf
+
+	return conf, nil
 }
