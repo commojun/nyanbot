@@ -1,10 +1,5 @@
-# これを変更する場合、crontabの設定も変更する必要がある
-base_minute_duration: 5
-
 # LINE
 channel_secret: "secret"
 channel_access_token: "token"
 room_id: "id"
-
-csv_file_dir: "path to csv file dir"
 

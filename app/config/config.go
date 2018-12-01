@@ -11,14 +11,10 @@ type Config struct {
 	ChannelSecret      string `yaml:"channel_secret"`
 	ChannelAccessToken string `yaml:"channel_access_token"`
 	RoomId             string `yaml:"room_id"`
-	CsvFileDir         string `yaml:"csv_file_dir"`
-	BaseMinuteDuration int    `yaml:"base_minute_duration"`
 }
 
 func Load() (*Config, error) {
-	configFile := constant.ConfigDir + "/config.yml"
-
-	return LoadWithPath(configFile)
+	return LoadWithPath(constant.ConfigPath)
 }
 
 func LoadWithPath(path string) (*Config, error) {

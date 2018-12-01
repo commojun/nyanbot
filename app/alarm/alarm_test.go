@@ -1,4 +1,4 @@
-package nyanbot
+package alarm
 
 import (
 	"io/ioutil"
