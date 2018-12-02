@@ -8,3 +8,7 @@ COPY . .
 
 RUN make deps
 RUN go install github.com/commojun/nyanbot/cmd/hello
+RUN go install github.com/commojun/nyanbot/cmd/alarm
+
+# crontab
+COPY

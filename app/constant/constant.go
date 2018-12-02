@@ -3,7 +3,7 @@ package constant
 import "os"
 
 const (
-	BaseMinuteDuration = 5
+	BaseMinuteDuration = 1
 )
 
 var (

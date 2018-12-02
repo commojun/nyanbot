@@ -1,0 +1,3 @@
+PATH=/go/bin:/usr/bin:/bin
+
+* * * * * alarm
