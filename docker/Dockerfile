@@ -1,4 +1,5 @@
-FROM golang:1.9
+FROM golang:alpine
+MAINTAINER commojun <junpooooow@gmail.com>
 
 ENV NYAN_USER_DIR "/root/nyanbot"
 
