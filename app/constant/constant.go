@@ -7,12 +7,13 @@ const (
 )
 
 var (
-	ConfigDir = os.Getenv("NYAN_CONF_DIR")
+	UserDir = os.Getenv("NYAN_USER_DIR")
 
 	//config
+	ConfigDir  = UserDir + "/config"
 	ConfigPath = ConfigDir + "/config.yml"
 
 	//csv
-	CsvDir       = ConfigDir + "/csv"
+	CsvDir       = UserDir + "/csv"
 	AlarmCsvPath = CsvDir + "/push_message.csv"
 )
