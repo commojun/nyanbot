@@ -1,0 +1,8 @@
+github.com/jessevdk/go-flags v1.4.0/go.mod h1:4FA24M0QyGHXBuZZK/XkWh8h0e1EYbRYJSGM75WSRxI=
+github.com/jszwec/csvutil v1.1.1 h1:PRaLwZQQ5nelBxngpGJfZQr25HJEMjeuRHpUmjZLNK8=
+github.com/jszwec/csvutil v1.1.1/go.mod h1:8YHz6C3KVdIeCxLMvwbbIVDCTA/Wi2df93AZlQNaE2U=
+github.com/line/line-bot-sdk-go v1.2.1 h1:7U7ersYaBxMvGKmGbXkCBOt6fJo7L+A49kUjbPiu2yU=
+github.com/line/line-bot-sdk-go v1.2.1/go.mod h1:0RjLjJEAU/3GIcHkC3av6O4jInAbt25nnZVmOFUgDBg=
+gopkg.in/check.v1 v0.0.0-20161208181325-20d25e280405/go.mod h1:Co6ibVJAznAaIkqp8huTwlJQCZ016jof/cbN4VW5Yz0=
+gopkg.in/yaml.v2 v2.2.1 h1:mUhvW9EsL+naU5Q3cakzfE91YhliOondGd6ZrsDBHQE=
+gopkg.in/yaml.v2 v2.2.1/go.mod h1:hI93XBmqTisBFMUTm0b8Fm+jr3Dg1NNxqwp+5A1VGuI=

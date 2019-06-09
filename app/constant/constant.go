@@ -9,9 +9,9 @@ const (
 var (
 	UserDir = os.Getenv("NYAN_USER_DIR")
 
-	//config
-	ConfigDir  = UserDir + "/config"
-	ConfigPath = ConfigDir + "/config.yml"
+	ChannelSecret      = os.Getenv("NYAN_CHANNEL_SECRET")
+	ChannelAccessToken = os.Getenv("NYAN_ACCESS_TOKEN")
+	RoomId             = os.Getenv("NYAN_ROOM_ID")
 
 	//csv
 	CsvDir       = UserDir + "/csv"

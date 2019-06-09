@@ -1,29 +1,24 @@
 package linebot
 
 import (
-	"github.com/commojun/nyanbot/app/config"
+	"github.com/commojun/nyanbot/app/constant"
 	origin "github.com/line/line-bot-sdk-go/linebot"
 )
 
 type LineBot struct {
 	Client *origin.Client
-	Config *config.Config
+	RoomId string
 }
 
 func New() (*LineBot, error) {
-	conf, err := config.Load()
-	if err != nil {
-		return &LineBot{}, err
-	}
-
-	botClient, err := origin.New(conf.ChannelSecret, conf.ChannelAccessToken)
+	botClient, err := origin.New(constant.ChannelSecret, constant.ChannelAccessToken)
 	if err != nil {
 		return &LineBot{}, err
 	}
 
 	var bot = &LineBot{
 		Client: botClient,
-		Config: conf,
+		RoomId: constant.RoomId,
 	}
 
 	return bot, nil
@@ -31,7 +26,7 @@ func New() (*LineBot, error) {
 
 func (bot *LineBot) TextMessage(msg string) error {
 	textMsg := origin.NewTextMessage(msg)
-	_, err := bot.Client.PushMessage(bot.Config.RoomId, textMsg).Do()
+	_, err := bot.Client.PushMessage(bot.RoomId, textMsg).Do()
 	if err != nil {
 		return err
 	}
