@@ -5,19 +5,20 @@ import (
 )
 
 type Hello struct {
+	Bot *linebot.LineBot
 }
 
 func New() (*Hello, error) {
-	return &Hello{}, nil
+	bot, err := linebot.New()
+	if err != nil {
+		return &Hello{}, err
+	}
+	return &Hello{Bot: bot}, nil
 }
 
 func (hello *Hello) Say() error {
-	bot, err := linebot.New()
-	if err != nil {
-		return err
-	}
 
-	err = bot.TextMessage("Hello!")
+	err := hello.Bot.TextMessage("Hello!")
 	if err != nil {
 		return err
 	}
