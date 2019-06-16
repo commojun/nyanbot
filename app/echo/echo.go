@@ -40,6 +40,7 @@ func (echo *Echo) StartServer() error {
 				switch message := event.Message.(type) {
 				case *linebotOrg.TextMessage:
 					fmt.Printf("%v", message)
+					fmt.Printf("%v", event.Source)
 					if _, err = echo.Bot.Client.ReplyMessage(event.ReplyToken, linebotOrg.NewTextMessage(message.Text)).Do(); err != nil {
 						log.Print(err)
 					}
