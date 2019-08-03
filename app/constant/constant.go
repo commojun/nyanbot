@@ -16,4 +16,11 @@ var (
 	//csv
 	CsvDir       = UserDir + "/csv"
 	AlarmCsvPath = CsvDir + "/push_message.csv"
+
+	AlarmSheetID = os.Getenv("NYAN_ALARM_SHEET_ID")
+
+	GoogleClientEmail  = os.Getenv("NYAN_GOOGLE_CLIENT_EMAIL")
+	GooglePrivateKey   = os.Getenv("NYAN_GOOGLE_PRIVATE_KEY")
+	GooglePrivateKeyID = os.Getenv("NYAN_GOOGLE_PRIVATE_KEY_ID")
+	GoogleTokenURL     = os.Getenv("NYAN_GOOGLE_TOKEN_URL")
 )
