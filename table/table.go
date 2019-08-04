@@ -11,6 +11,7 @@ import (
 
 type Table struct {
 	Alarms []alarm `json:"alarm"`
+	Name   []room  `json:"room"`
 }
 
 type alarm struct {
@@ -23,6 +24,12 @@ type alarm struct {
 	WeekNum    string `json:"week_num"`
 	Message    string `json:"message"`
 	RoomID     string `json:"room_id"`
+}
+
+type room struct {
+	ID     string `json:"id"`
+	RoomID string `json:"room_id"`
+	Name   string `json:"name"`
 }
 
 func New() (*Table, error) {
@@ -46,18 +53,32 @@ func (table *Table) LoadFromSheet() error {
 		headerMap[cell.(string)] = i
 	}
 
-	alms := []alarm{}
-	for _, row := range data {
-		alm := alarm{}
-		almType := reflect.TypeOf(alm)
-		for i := 0; i < almType.NumField(); i++ {
-			cIndex := headerMap[almType.Field(i).Tag.Get("json")]
-			value := row[cIndex]
-			reflect.ValueOf(&alm).Elem().Field(i).SetString(value.(string))
+	objs := make([]alarm, len(data))
+	skipIds := []int{}
+	for i, row := range data {
+
+		// id列が空の行はスキップする
+		if row[headerMap["id"]] == "" {
+			skipIds = append(skipIds, i)
+			continue
 		}
-		alms = append(alms, alm)
-		table.Alarms = alms
+
+		obj := objs[i]
+		objType := reflect.TypeOf(obj)
+		for j := 0; j < objType.NumField(); j++ {
+			cIndex := headerMap[objType.Field(j).Tag.Get("json")]
+			value := row[cIndex]
+			reflect.ValueOf(&obj).Elem().Field(j).SetString(value.(string))
+			objs[i] = obj
+		}
 	}
+
+	// IDが空だった行を除外する
+	for _, id := range skipIds {
+		objs = append(objs[:id], objs[id+1:]...)
+	}
+
+	table.Alarms = objs
 
 	jsonBytes, err := json.Marshal(table.Alarms)
 	if err != nil {
