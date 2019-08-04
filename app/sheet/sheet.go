@@ -3,7 +3,6 @@ package sheet
 import (
 	"fmt"
 	"log"
-	"net/http"
 
 	"github.com/commojun/nyanbot/app/constant"
 	"golang.org/x/oauth2"
@@ -13,7 +12,7 @@ import (
 )
 
 type Sheet struct {
-	Client *http.Client
+	Service *sheets.Service
 }
 
 func New() (*Sheet, error) {
@@ -28,20 +27,29 @@ func New() (*Sheet, error) {
 		cfg.TokenURL = google.JWTTokenURL
 	}
 
+	sheetService, err := sheets.New(cfg.Client(oauth2.NoContext))
+	if err != nil {
+		return &Sheet{}, err
+	}
+
 	return &Sheet{
-		Client: cfg.Client(oauth2.NoContext),
+		Service: sheetService,
 	}, nil
 }
 
-func (sheet *Sheet) Load() error {
-	spreadsheetId := constant.AlarmSheetID
-
-	sheetService, err := sheets.New(sheet.Client)
+func (sheet *Sheet) Get(spreadsheetID string, sheetName string) (*sheets.ValueRange, error) {
+	res, err := sheet.Service.Spreadsheets.Values.Get(spreadsheetID, sheetName).Do()
 	if err != nil {
-		log.Fatalf("Unable to retrieve Sheets Client %v", err)
+		return &sheets.ValueRange{}, err
 	}
 
-	_, err = sheetService.Spreadsheets.Get(spreadsheetId).Do()
+	return res, err
+}
+
+func (sheet *Sheet) Load() error {
+	spreadsheetId := constant.SheetID
+
+	_, err := sheet.Service.Spreadsheets.Get(spreadsheetId).Do()
 	if err != nil {
 		log.Fatalf("Unable to get Spreadsheets. %v", err)
 	}
