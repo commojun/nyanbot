@@ -5,11 +5,11 @@ import (
 	"fmt"
 	"log"
 
-	"github.com/commojun/nyanbot/masterdata/tables"
+	"github.com/commojun/nyanbot/masterdata/table"
 )
 
 func main() {
-	ts, err := tables.New()
+	ts, err := table.New()
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -27,7 +27,7 @@ func main() {
 	fmt.Printf("\n\n")
 
 	fmt.Println("----------JSONから構造体へ----------")
-	alms := []tables.Alarm{}
+	alms := []table.Alarm{}
 	json.Unmarshal(jsonBytes, &alms)
 	fmt.Println(alms)
 
