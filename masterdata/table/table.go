@@ -3,7 +3,10 @@ package table
 import (
 	"reflect"
 
+	"encoding/json"
+
 	"github.com/commojun/nyanbot/app/constant"
+	"github.com/commojun/nyanbot/app/redis"
 	"github.com/commojun/nyanbot/app/sheet"
 )
 
@@ -40,6 +43,29 @@ func New() (*Tables, error) {
 	return &ts, nil
 }
 
+func (ts *Tables) SaveToRedis() error {
+	redisClient := redis.NewClient()
+
+	tsValue := reflect.ValueOf(*ts)
+	for i := 0; i < tsValue.NumField(); i++ {
+		tName := tsValue.Type().Field(i).Tag.Get("tableName")
+		// tableをJSON文字列に変換する
+		jsonByte, err := json.Marshal(tsValue.Field(i).Interface())
+		if err != nil {
+			return err
+		}
+		// Redisに書き込む
+		err = redisClient.Set(tName, string(jsonByte), 0).Err()
+		if err != nil {
+			return err
+		}
+	}
+
+	return nil
+}
+
+func RestoreFromRedis() {}
+
 func (ts *Tables) LoadTablesFromSheet() error {
 	// sheetServiceは使い回す
 	s, err := sheet.New()
@@ -49,7 +75,7 @@ func (ts *Tables) LoadTablesFromSheet() error {
 
 	tsType := reflect.TypeOf(*ts)
 	for i := 0; i < tsType.NumField(); i++ {
-		// 各tableを生成
+		// tableを生成
 		tName := tsType.Field(i).Tag.Get("tableName")
 		tType := tsType.Field(i).Type
 		tValue, err := getTableFromSheet(s, tType, tName)

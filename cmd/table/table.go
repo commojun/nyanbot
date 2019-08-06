@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"log"
 
+	"github.com/commojun/nyanbot/app/redis"
 	"github.com/commojun/nyanbot/masterdata/table"
 )
 
@@ -30,5 +31,20 @@ func main() {
 	alms := []table.Alarm{}
 	json.Unmarshal(jsonBytes, &alms)
 	fmt.Println(alms)
+
+	err = ts.SaveToRedis()
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	fmt.Println("----------Redisから復元する----------")
+	redisClient := redis.NewClient()
+	val, err := redisClient.Get("alarm").Result()
+	if err != nil {
+		log.Fatal(err)
+	}
+	alms2 := []table.Alarm{}
+	json.Unmarshal([]byte(val), &alms2)
+	fmt.Println(alms2)
 
 }

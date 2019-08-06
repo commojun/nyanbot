@@ -25,7 +25,7 @@ func (kvs *KVs) LoadKVsFromSheet() error {
 
 	kvsType := reflect.TypeOf(*kvs)
 	for i := 0; i < kvsType.NumField(); i++ {
-		// 各kvを作成
+		// kvを作成
 		kvName := kvsType.Field(i).Tag.Get("kvName")
 		kv, err := getKVFromSheet(s, kvName)
 		if err != nil {
