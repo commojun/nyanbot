@@ -8,8 +8,7 @@ import (
 )
 
 type KVs struct {
-	Rooms  map[string]string `kvName:"room"`
-	TestKV map[string]string `kvName:"testkv"`
+	Rooms map[string]string `kvName:"room"`
 }
 
 func New() (*KVs, error) {
