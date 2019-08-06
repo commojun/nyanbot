@@ -1,7 +1,6 @@
 package table
 
 import (
-	"fmt"
 	"reflect"
 
 	"github.com/commojun/nyanbot/app/constant"
@@ -9,8 +8,8 @@ import (
 )
 
 type Tables struct {
-	Alarms        []Alarm       `json:"alarm"`
-	Anniversaries []Anniversary `json:"anniversary"`
+	Alarms        []Alarm       `tableName:"alarm"`
+	Anniversaries []Anniversary `tableName:"anniversary"`
 }
 
 type Alarm struct {
@@ -49,10 +48,9 @@ func (ts *Tables) LoadTablesFromSheet() error {
 	}
 
 	tsType := reflect.TypeOf(*ts)
-	fmt.Println(tsType)
 	for i := 0; i < tsType.NumField(); i++ {
 		// 各tableを生成
-		tName := tsType.Field(i).Tag.Get("json")
+		tName := tsType.Field(i).Tag.Get("tableName")
 		tType := tsType.Field(i).Type
 		tValue, err := getTableFromSheet(s, tType, tName)
 		if err != nil {
