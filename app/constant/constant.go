@@ -17,10 +17,12 @@ var (
 	CsvDir       = UserDir + "/csv"
 	AlarmCsvPath = CsvDir + "/push_message.csv"
 
-	SheetID = os.Getenv("NYAN_SHEET_ID")
-
 	GoogleClientEmail  = os.Getenv("NYAN_GOOGLE_CLIENT_EMAIL")
 	GooglePrivateKey   = os.Getenv("NYAN_GOOGLE_PRIVATE_KEY")
 	GooglePrivateKeyID = os.Getenv("NYAN_GOOGLE_PRIVATE_KEY_ID")
 	GoogleTokenURL     = os.Getenv("NYAN_GOOGLE_TOKEN_URL")
+
+	SheetID = os.Getenv("NYAN_SHEET_ID")
+
+	RedisHost = os.Getenv("NYAN_REDIS_HOST")
 )
