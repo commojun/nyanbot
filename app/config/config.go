@@ -3,7 +3,6 @@ package config
 import (
 	"io/ioutil"
 
-	"github.com/commojun/nyanbot/app/constant"
 	yaml "gopkg.in/yaml.v2"
 )
 

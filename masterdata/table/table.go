@@ -5,9 +5,9 @@ import (
 
 	"encoding/json"
 
-	"github.com/commojun/nyanbot/app/constant"
 	"github.com/commojun/nyanbot/app/redis"
 	"github.com/commojun/nyanbot/app/sheet"
+	"github.com/commojun/nyanbot/constant"
 )
 
 type Tables struct {

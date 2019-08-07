@@ -1,7 +1,7 @@
 package linebot
 
 import (
-	"github.com/commojun/nyanbot/app/constant"
+	"github.com/commojun/nyanbot/constant"
 	origin "github.com/line/line-bot-sdk-go/linebot"
 )
 

@@ -4,8 +4,8 @@ import (
 	"io/ioutil"
 	"time"
 
-	"github.com/commojun/nyanbot/app/constant"
 	"github.com/commojun/nyanbot/app/linebot"
+	"github.com/commojun/nyanbot/constant"
 	"github.com/jszwec/csvutil"
 )
 

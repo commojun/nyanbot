@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"log"
 
-	"github.com/commojun/nyanbot/app/constant"
+	"github.com/commojun/nyanbot/constant"
 	"golang.org/x/oauth2"
 	"golang.org/x/oauth2/google"
 	"golang.org/x/oauth2/jwt"

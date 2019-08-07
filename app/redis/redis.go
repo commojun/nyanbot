@@ -1,7 +1,7 @@
 package redis
 
 import (
-	"github.com/commojun/nyanbot/app/constant"
+	"github.com/commojun/nyanbot/constant"
 	origin "github.com/go-redis/redis"
 )
 

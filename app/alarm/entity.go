@@ -5,7 +5,7 @@ import (
 	"strconv"
 	"time"
 
-	"github.com/commojun/nyanbot/app/constant"
+	"github.com/commojun/nyanbot/constant"
 )
 
 type Entity struct {
