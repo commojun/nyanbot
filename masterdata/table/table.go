@@ -15,32 +15,30 @@ type Tables struct {
 	Anniversaries []Anniversary `tableName:"anniversary"`
 }
 
-type Alarm struct {
-	ID         string `json:"id"`
-	Minute     string `json:"minute"`
-	Hour       string `json:"hour"`
-	DayOfMonth string `json:"day_of_month"`
-	Month      string `json:"month"`
-	DayOfWeek  string `json:"day_of_week"`
-	WeekNum    string `json:"week_num"`
-	Message    string `json:"message"`
-	RoomID     string `json:"room_id"`
-}
-
-type Anniversary struct {
-	ID      string `json:"id"`
-	Year    string `json:"year"`
-	Month   string `json:"month"`
-	Day     string `json:"day"`
-	Name    string `json:"name"`
-	Period  string `json:"period"`
-	RoomKey string `json:"room_key"`
-}
-
-func New() (*Tables, error) {
-	// Redisから読み込むことを試みる
+func Initialize() (*Tables, error) {
 	ts := Tables{}
+	err := ts.LoadTablesFromSheet()
+	if err != nil {
+		return &ts, err
+	}
+
+	err = ts.SaveToRedis()
+	if err != nil {
+		return &ts, err
+	}
+
 	return &ts, nil
+}
+
+func RestoreFromRedis(table interface{}, tableName string) error {
+	redisClient := redis.NewClient()
+	val, err := redisClient.Get(tableName).Result()
+	if err != nil {
+		return err
+	}
+	json.Unmarshal([]byte(val), table)
+
+	return err
 }
 
 func (ts *Tables) SaveToRedis() error {
@@ -63,8 +61,6 @@ func (ts *Tables) SaveToRedis() error {
 
 	return nil
 }
-
-func RestoreFromRedis() {}
 
 func (ts *Tables) LoadTablesFromSheet() error {
 	// sheetServiceは使い回す
