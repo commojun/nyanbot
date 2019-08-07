@@ -4,16 +4,57 @@ import (
 	"reflect"
 
 	"github.com/commojun/nyanbot/app/constant"
+	"github.com/commojun/nyanbot/app/redis"
 	"github.com/commojun/nyanbot/app/sheet"
+)
+
+var (
+	Room = "room"
+	Test = "testkv"
 )
 
 type KVs struct {
 	Rooms map[string]string `kvName:"room"`
+	Tests map[string]string `kvName:"testkv"`
 }
 
-func New() (*KVs, error) {
+func Initialize() (*KVs, error) {
 	kvs := KVs{}
+	err := kvs.LoadKVsFromSheet()
+	if err != nil {
+		return &kvs, err
+	}
+
+	err = kvs.SaveToRedis()
+	if err != nil {
+		return &kvs, err
+	}
+
 	return &kvs, nil
+}
+
+func (kvs *KVs) SaveToRedis() error {
+	redisClient := redis.NewClient()
+
+	kvsValue := reflect.ValueOf(*kvs)
+	for i := 0; i < kvsValue.NumField(); i++ {
+		kvName := kvsValue.Type().Field(i).Tag.Get("kvName")
+		// いったん古い情報を消す
+		err := redisClient.Del(kvName).Err()
+		if err != nil {
+			return err
+		}
+
+		for key, value := range kvsValue.Field(i).Interface().(map[string]string) {
+			// Redisに書き込む
+			err := redisClient.HSet(kvName, key, value).Err()
+			if err != nil {
+				return err
+			}
+		}
+	}
+
+	return nil
 }
 
 func (kvs *KVs) LoadKVsFromSheet() error {

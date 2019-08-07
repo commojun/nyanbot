@@ -47,6 +47,12 @@ func (ts *Tables) SaveToRedis() error {
 	tsValue := reflect.ValueOf(*ts)
 	for i := 0; i < tsValue.NumField(); i++ {
 		tName := tsValue.Type().Field(i).Tag.Get("tableName")
+		// いったん古い情報を消す
+		err := redisClient.Del(tName).Err()
+		if err != nil {
+			return err
+		}
+
 		// tableをJSON文字列に変換する
 		jsonByte, err := json.Marshal(tsValue.Field(i).Interface())
 		if err != nil {
