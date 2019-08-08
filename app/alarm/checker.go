@@ -6,23 +6,13 @@ import (
 	"time"
 
 	"github.com/commojun/nyanbot/constant"
+	"github.com/commojun/nyanbot/masterdata/table"
 )
 
-type Entity struct {
-	ID         int    `csv:"id"`
-	Minute     string `csv:"minute"`
-	Hour       string `csv:"hour"`
-	DayOfMonth string `csv:"day_of_month"`
-	Month      string `csv:"month"`
-	DayOfWeek  string `csv:"day_of_week"`
-	WeekNum    string `csv:"week_num"`
-	Message    string `csv:"message"`
-}
-
-func (entity *Entity) Check(now time.Time) (bool, error) {
+func Check(alm *table.Alarm, now time.Time) (bool, error) {
 	weekNum := (int(now.Day()) / 7) + 1
 
-	figs := []string{entity.Month, entity.WeekNum, entity.DayOfWeek, entity.DayOfMonth, entity.Hour}
+	figs := []string{alm.Month, alm.WeekNum, alm.DayOfWeek, alm.DayOfMonth, alm.Hour}
 	comparison := []int{int(now.Month()), weekNum, int(now.Weekday()), now.Day(), now.Hour()}
 
 	for i, fig := range figs {
@@ -39,8 +29,8 @@ func (entity *Entity) Check(now time.Time) (bool, error) {
 		}
 	}
 
-	if entity.Minute != "*" {
-		fignum, err := strconv.Atoi(entity.Minute)
+	if alm.Minute != "*" {
+		fignum, err := strconv.Atoi(alm.Minute)
 		if err != nil {
 			return false, err
 		}

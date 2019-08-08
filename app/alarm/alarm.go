@@ -1,56 +1,47 @@
 package alarm
 
 import (
-	"io/ioutil"
 	"time"
 
 	"github.com/commojun/nyanbot/app/linebot"
-	"github.com/commojun/nyanbot/constant"
-	"github.com/jszwec/csvutil"
+	"github.com/commojun/nyanbot/masterdata/table"
 )
 
-type Alarm struct {
-	Entities *[]Entity
+type AlarmManager struct {
+	Alarms *[]table.Alarm
+	Bot    *linebot.LineBot
 }
 
-func Load() (*Alarm, error) {
-	path := constant.AlarmCsvPath
-	return LoadWithPath(path)
-}
-
-func LoadWithPath(path string) (*Alarm, error) {
-	buf, err := ioutil.ReadFile(path)
+func New() (*AlarmManager, error) {
+	alms, err := table.Alarms()
 	if err != nil {
-		return &Alarm{}, err
+		return &AlarmManager{}, err
 	}
 
-	var entities []Entity
-	err = csvutil.Unmarshal(buf, &entities)
-	if err != nil {
-		return &Alarm{}, err
-	}
-
-	alm := Alarm{
-		Entities: &entities,
-	}
-	return &alm, nil
-}
-
-func (alm *Alarm) Send() error {
 	bot, err := linebot.New()
 	if err != nil {
-		return err
+		return &AlarmManager{}, err
 	}
 
-	for _, entity := range *alm.Entities {
-		chk, err := entity.Check(time.Now())
+	am := AlarmManager{
+		Alarms: alms,
+		Bot:    bot,
+	}
+
+	return &am, nil
+}
+
+func (am *AlarmManager) Run() error {
+
+	for _, a := range *am.Alarms {
+		chk, err := Check(&a, time.Now())
 		if err != nil {
 			return err
 		}
 		if chk == false {
 			continue
 		}
-		bot.TextMessage(entity.Message)
+		am.Bot.TextMessage(a.Message)
 		if err != nil {
 			return err
 		}

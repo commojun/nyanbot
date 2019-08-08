@@ -7,12 +7,12 @@ import (
 )
 
 func main() {
-	alm, err := alarm.Load()
+	alm, err := alarm.New()
 	if err != nil {
 		log.Fatal(err)
 	}
 
-	err = alm.Send()
+	err = alm.Run()
 	if err != nil {
 		log.Fatal(err)
 	}
