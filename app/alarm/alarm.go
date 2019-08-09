@@ -4,6 +4,7 @@ import (
 	"time"
 
 	"github.com/commojun/nyanbot/app/linebot"
+	"github.com/commojun/nyanbot/constant"
 	"github.com/commojun/nyanbot/masterdata/table"
 )
 
@@ -34,7 +35,7 @@ func New() (*AlarmManager, error) {
 func (am *AlarmManager) Run() error {
 
 	for _, a := range *am.Alarms {
-		chk, err := Check(&a, time.Now())
+		chk, err := Check(&a, time.Now(), constant.BaseMinuteDuration)
 		if err != nil {
 			return err
 		}

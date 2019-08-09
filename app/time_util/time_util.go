@@ -1,4 +1,4 @@
-package nyanbot
+package time_util
 
 import "time"
 
