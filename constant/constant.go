@@ -1,6 +1,9 @@
 package constant
 
-import "os"
+import (
+	"os"
+	"strings"
+)
 
 const (
 	BaseMinuteDuration = 1
@@ -12,7 +15,7 @@ var (
 	DefaultRoomID      = os.Getenv("NYAN_DEFAULT_ROOM_ID")
 
 	GoogleClientEmail  = os.Getenv("NYAN_GOOGLE_CLIENT_EMAIL")
-	GooglePrivateKey   = os.Getenv("NYAN_GOOGLE_PRIVATE_KEY")
+	GooglePrivateKey   = strings.Replace(os.Getenv("NYAN_GOOGLE_PRIVATE_KEY"), `\n`, "\n", -1)
 	GooglePrivateKeyID = os.Getenv("NYAN_GOOGLE_PRIVATE_KEY_ID")
 	GoogleTokenURL     = os.Getenv("NYAN_GOOGLE_TOKEN_URL")
 
