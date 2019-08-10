@@ -46,6 +46,6 @@ func Check(alm *table.Alarm, now time.Time, baseMinuteDuration int) (bool, error
 		}
 	}
 
-	log.Printf("[ID:%s] true", alm.ID)
+	log.Printf("[ID:%s] true room:%s", alm.ID, alm.RoomKey)
 	return true, nil
 }

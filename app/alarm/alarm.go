@@ -1,6 +1,7 @@
 package alarm
 
 import (
+	"log"
 	"time"
 
 	"github.com/commojun/nyanbot/app/linebot"
@@ -37,14 +38,15 @@ func (am *AlarmManager) Run() error {
 	for _, a := range *am.Alarms {
 		chk, err := Check(&a, time.Now(), constant.BaseMinuteDuration)
 		if err != nil {
-			return err
+			log.Printf("[ID:%s] error: %s", a.ID, err)
+			continue
 		}
 		if chk == false {
 			continue
 		}
-		am.Bot.TextMessage(a.Message)
+		err = am.Bot.TextMessageWithRoomKey(a.Message, a.RoomKey)
 		if err != nil {
-			return err
+			log.Printf("[ID:%s] error: %s", a.ID, err)
 		}
 	}
 

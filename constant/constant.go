@@ -9,7 +9,7 @@ const (
 var (
 	ChannelSecret      = os.Getenv("NYAN_CHANNEL_SECRET")
 	ChannelAccessToken = os.Getenv("NYAN_ACCESS_TOKEN")
-	RoomId             = os.Getenv("NYAN_ROOM_ID")
+	DefaultRoomID      = os.Getenv("NYAN_DEFAULT_ROOM_ID")
 
 	GoogleClientEmail  = os.Getenv("NYAN_GOOGLE_CLIENT_EMAIL")
 	GooglePrivateKey   = os.Getenv("NYAN_GOOGLE_PRIVATE_KEY")
