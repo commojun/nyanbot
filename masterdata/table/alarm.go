@@ -9,7 +9,7 @@ type Alarm struct {
 	DayOfWeek  string `json:"day_of_week"`
 	WeekNum    string `json:"week_num"`
 	Message    string `json:"message"`
-	RoomID     string `json:"room_id"`
+	RoomKey    string `json:"room_key"`
 }
 
 func Alarms() (*[]Alarm, error) {
