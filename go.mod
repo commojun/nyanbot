@@ -3,7 +3,7 @@ module github.com/commojun/nyanbot
 go 1.12
 
 require (
-	github.com/Songmu/retry v0.1.0 // indirect
+	github.com/Songmu/retry v0.1.0
 	github.com/go-redis/redis v6.15.2+incompatible
 	github.com/jessevdk/go-flags v1.4.0
 	github.com/jszwec/csvutil v1.1.1
