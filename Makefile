@@ -3,5 +3,5 @@ PROJECT_NAME=nyanbot
 testall:
 	go test ./...
 
-init:
+export:
 	go run cmd/init/init.go
