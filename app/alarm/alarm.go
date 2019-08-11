@@ -2,9 +2,9 @@ package alarm
 
 import (
 	"log"
-	"time"
 
 	"github.com/commojun/nyanbot/app/linebot"
+	"github.com/commojun/nyanbot/app/time_util"
 	"github.com/commojun/nyanbot/constant"
 	"github.com/commojun/nyanbot/masterdata/table"
 )
@@ -36,7 +36,7 @@ func New() (*AlarmManager, error) {
 func (am *AlarmManager) Run() error {
 
 	for _, a := range *am.Alarms {
-		chk, err := Check(&a, time.Now(), constant.BaseMinuteDuration)
+		chk, err := Check(&a, time_util.LocalTime(), constant.BaseMinuteDuration)
 		if err != nil {
 			log.Printf("[ID:%s] error: %s", a.ID, err)
 			continue

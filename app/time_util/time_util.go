@@ -22,3 +22,7 @@ func JSTParse(s string) (time.Time, error) {
 	}
 	return t, nil
 }
+
+func LocalTime() time.Time {
+	return time.Now().In(time.Local)
+}
