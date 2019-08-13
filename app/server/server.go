@@ -16,13 +16,13 @@ func New() (*Server, error) {
 }
 
 func (server *Server) Start() error {
-	apis := api.APIs
+	apis := api.New()
 	for _, api := range apis {
 		http.HandleFunc(api.MakeHundleFunc())
 		log.Printf("Registered API: %s", api.Name)
 	}
 
-	port := "1337"
+	port := "8999"
 	log.Printf("Start server port:%s", port)
 	err := http.ListenAndServe(":"+port, nil)
 	if err != nil {

@@ -3,15 +3,13 @@ package api
 import "net/http"
 
 var (
-	Test = API{
+	test = API{
 		Name: "/test",
-		Get:  GetTest,
-		Post: nil,
+		Get:  getTest,
 	}
 )
 
-func GetTest(w http.ResponseWriter, req *http.Request) {
-	w.WriteHeader(http.StatusOK)
-	w.Write([]byte("this is test"))
-	return
+func getTest(req *http.Request, res *Response) error {
+	res.Message = "this is test"
+	return nil
 }
