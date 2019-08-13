@@ -30,6 +30,8 @@ func postMessage(req *http.Request, res *Response) error {
 		return err
 	}
 
+	// TODO 申し訳程度のTOKEN照合機能を追加
+
 	err = bot.TextMessageWithRoomKey(parsedReq.Message, parsedReq.RoomKey)
 	if err != nil {
 		res.Status = http.StatusInternalServerError
