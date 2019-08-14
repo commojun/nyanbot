@@ -18,8 +18,13 @@ type Server struct {
 func New() (*Server, error) {
 	port, err := strconv.Atoi(constant.ServerPort)
 	if err != nil {
-		return nil, err
+		if constant.ServerPort == "" {
+			port = constant.DefaultServerPort
+		} else {
+			return nil, err
+		}
 	}
+
 	apis, err := api.New()
 	return &Server{
 		APIs: apis,

@@ -7,6 +7,7 @@ import (
 
 const (
 	BaseMinuteDuration = 1
+	DefaultServerPort  = 8999
 )
 
 var (
@@ -15,6 +16,8 @@ var (
 	ChannelSecret      = os.Getenv("NYAN_CHANNEL_SECRET")
 	ChannelAccessToken = os.Getenv("NYAN_ACCESS_TOKEN")
 	DefaultRoomID      = os.Getenv("NYAN_DEFAULT_ROOM_ID")
+
+	MessageToken = os.Getenv("NYAN_MESSAGE_TOKEN")
 
 	GoogleClientEmail  = os.Getenv("NYAN_GOOGLE_CLIENT_EMAIL")
 	GooglePrivateKey   = strings.Replace(os.Getenv("NYAN_GOOGLE_PRIVATE_KEY"), `\n`, "\n", -1)
