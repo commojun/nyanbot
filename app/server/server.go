@@ -2,27 +2,38 @@ package server
 
 import (
 	"log"
+	"strconv"
 
 	"net/http"
 
 	"github.com/commojun/nyanbot/api"
+	"github.com/commojun/nyanbot/constant"
 )
 
 type Server struct {
+	APIs []*api.API
+	Port int
 }
 
 func New() (*Server, error) {
-	return &Server{}, nil
+	port, err := strconv.Atoi(constant.ServerPort)
+	if err != nil {
+		return nil, err
+	}
+	apis, err := api.New()
+	return &Server{
+		APIs: apis,
+		Port: port,
+	}, nil
 }
 
 func (server *Server) Start() error {
-	apis := api.New()
-	for _, api := range apis {
+	for _, api := range server.APIs {
 		http.HandleFunc(api.MakeHundleFunc())
 		log.Printf("Registered API: %s", api.Name)
 	}
 
-	port := "8999"
+	port := strconv.Itoa(server.Port)
 	log.Printf("Start server port:%s", port)
 	err := http.ListenAndServe(":"+port, nil)
 	if err != nil {

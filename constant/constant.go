@@ -10,6 +10,8 @@ const (
 )
 
 var (
+	ServerPort = os.Getenv("NYAN_SERVER_PORT")
+
 	ChannelSecret      = os.Getenv("NYAN_CHANNEL_SECRET")
 	ChannelAccessToken = os.Getenv("NYAN_ACCESS_TOKEN")
 	DefaultRoomID      = os.Getenv("NYAN_DEFAULT_ROOM_ID")

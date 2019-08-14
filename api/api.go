@@ -21,11 +21,11 @@ type Response struct {
 	Writer  *http.ResponseWriter
 }
 
-func New() []*API {
+func New() ([]*API, error) {
 	return []*API{
 		&test,
 		&message,
-	}
+	}, nil
 }
 
 func (api *API) MakeHundleFunc() (string, func(http.ResponseWriter, *http.Request)) {
