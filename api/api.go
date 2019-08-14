@@ -21,10 +21,10 @@ type Response struct {
 	Writer  *http.ResponseWriter
 }
 
-func New() ([]*API, error) {
-	return []*API{
-		&test,
-		&message,
+func New() ([]API, error) {
+	return []API{
+		test,
+		message,
 	}, nil
 }
 

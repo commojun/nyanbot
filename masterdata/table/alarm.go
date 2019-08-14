@@ -12,8 +12,8 @@ type Alarm struct {
 	RoomKey    string `json:"room_key"`
 }
 
-func Alarms() (*[]Alarm, error) {
-	alarms := &[]Alarm{}
-	err := RestoreFromRedis(alarms, "alarm")
+func Alarms() ([]Alarm, error) {
+	alarms := []Alarm{}
+	err := RestoreFromRedis(&alarms, "alarm")
 	return alarms, err
 }

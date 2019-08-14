@@ -29,12 +29,12 @@ func main() {
 	if err != nil {
 		log.Fatal(err)
 	}
-	fmt.Println(*alms)
+	fmt.Println(alms)
 
 	fmt.Println("anniversary")
 	anvs, err := table.Anniversaries()
 	if err != nil {
 		log.Fatal(err)
 	}
-	fmt.Println(*anvs)
+	fmt.Println(anvs)
 }

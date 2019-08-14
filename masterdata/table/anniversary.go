@@ -10,8 +10,8 @@ type Anniversary struct {
 	RoomKey string `json:"room_key"`
 }
 
-func Anniversaries() (*[]Anniversary, error) {
-	anniversaries := &[]Anniversary{}
-	err := RestoreFromRedis(anniversaries, "anniversary")
+func Anniversaries() ([]Anniversary, error) {
+	anniversaries := []Anniversary{}
+	err := RestoreFromRedis(&anniversaries, "anniversary")
 	return anniversaries, err
 }

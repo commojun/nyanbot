@@ -10,7 +10,7 @@ import (
 )
 
 type AlarmManager struct {
-	Alarms *[]table.Alarm
+	Alarms []table.Alarm
 	Bot    *linebot.LineBot
 }
 
@@ -29,13 +29,12 @@ func New() (*AlarmManager, error) {
 		Alarms: alms,
 		Bot:    bot,
 	}
-
 	return &am, nil
 }
 
 func (am *AlarmManager) Run() error {
 
-	for _, a := range *am.Alarms {
+	for _, a := range am.Alarms {
 		chk, err := Check(&a, time_util.LocalTime(), constant.BaseMinuteDuration)
 		if err != nil {
 			log.Printf("[ID:%s] error: %s", a.ID, err)

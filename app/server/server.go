@@ -11,7 +11,7 @@ import (
 )
 
 type Server struct {
-	APIs []*api.API
+	APIs []api.API
 	Port int
 }
 
