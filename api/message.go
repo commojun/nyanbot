@@ -1,9 +1,11 @@
 package api
 
 import (
+	"fmt"
 	"net/http"
 
 	"github.com/commojun/nyanbot/app/linebot"
+	"github.com/commojun/nyanbot/constant"
 )
 
 var (
@@ -23,6 +25,7 @@ func postMessage(req *http.Request, res *Response) error {
 	var parsedReq struct {
 		RoomKey string `json:"room_key"`
 		Message string `json:"message"`
+		Token   string `json:"token"`
 	}
 	err = parseJSONRequest(req, &parsedReq)
 	if err != nil {
@@ -30,7 +33,10 @@ func postMessage(req *http.Request, res *Response) error {
 		return err
 	}
 
-	// TODO 申し訳程度のTOKEN照合機能を追加
+	if parsedReq.Token != constant.MessageToken {
+		res.Status = http.StatusInternalServerError
+		return fmt.Errorf("Token does not match")
+	}
 
 	err = bot.TextMessageWithRoomKey(parsedReq.Message, parsedReq.RoomKey)
 	if err != nil {
