@@ -1,6 +1,9 @@
 package linebot
 
 import (
+	"log"
+
+	"github.com/commojun/nyanbot/app/linebot/text_message_action"
 	"github.com/commojun/nyanbot/app/redis"
 	"github.com/commojun/nyanbot/constant"
 	"github.com/commojun/nyanbot/masterdata/key_value"
@@ -10,6 +13,7 @@ import (
 type LineBot struct {
 	Client        *origin.Client
 	DefaultRoomID string
+	Events        []*origin.Event
 }
 
 func New() (*LineBot, error) {
@@ -24,6 +28,10 @@ func New() (*LineBot, error) {
 	}
 
 	return bot, nil
+}
+
+func IsInvalidSignature(err error) bool {
+	return err == origin.ErrInvalidSignature
 }
 
 func (bot *LineBot) TextMessage(msg string) error {
@@ -56,4 +64,25 @@ func (bot *LineBot) textMessageWithRoomID(msg string, roomID string) error {
 	}
 
 	return nil
+}
+
+func (bot *LineBot) ActByEvents() {
+	for _, event := range bot.Events {
+		var err error
+		if event.Type == origin.EventTypeMessage {
+			switch message := event.Message.(type) {
+			case *origin.TextMessage:
+				tma := text_message_action.New(bot.Client, event, message)
+				tma.Do()
+			default:
+				log.Printf("[linebot.ActByEvents] message: %s, event: %s", message, event)
+			}
+		} else {
+			log.Printf("[linebot.ActByEvents] event: %s", event)
+		}
+		if err != nil {
+			log.Printf("[linebot.ActByEvents] error: %s, event: %s", err, event)
+		}
+	}
+	return
 }

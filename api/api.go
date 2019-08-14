@@ -25,6 +25,7 @@ func New() ([]API, error) {
 	return []API{
 		test,
 		message,
+		lineHook,
 	}, nil
 }
 
