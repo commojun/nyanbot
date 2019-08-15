@@ -32,6 +32,7 @@ func actions() []Action {
 		testdayo,
 		tellID,
 		export,
+		ojiline,
 	}
 }
 

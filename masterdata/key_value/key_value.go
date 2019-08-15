@@ -9,13 +9,15 @@ import (
 )
 
 var (
-	Room = "room"
-	Test = "testkv"
+	Room     = "room"
+	Nickname = "nickname"
+	Test     = "testkv"
 )
 
 type KVs struct {
-	Rooms map[string]string `kvName:"room"`
-	Tests map[string]string `kvName:"testkv"`
+	Rooms    map[string]string `kvName:"room"`
+	Nickname map[string]string `kvName:"nickname"`
+	Tests    map[string]string `kvName:"testkv"`
 }
 
 func Initialize() (*KVs, error) {
