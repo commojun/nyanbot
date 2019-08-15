@@ -1,7 +1,6 @@
 package text_message_action
 
 import (
-	"fmt"
 	"log"
 	"strings"
 
@@ -29,14 +28,8 @@ type Action struct {
 
 func actions() []Action {
 	return []Action{
-		{
-			Prefix: "てすと",
-			Do:     testdayo,
-		},
-		{
-			Prefix: "ID",
-			Do:     tellID,
-		},
+		testdayo,
+		tellID,
 	}
 }
 
@@ -49,6 +42,7 @@ func (tma *TextMessageAction) Do() {
 			if err != nil {
 				log.Printf("[text_message_action.Do] error: %s, actionPrefix: %s", err, action.Prefix)
 			} else {
+				log.Printf("[text_message_action.Do] actionPrefix: %s", action.Prefix)
 				actFlg = true
 			}
 		}
@@ -57,37 +51,12 @@ func (tma *TextMessageAction) Do() {
 		err = echo(tma)
 		if err != nil {
 			log.Printf("[text_message_action.Do] error: %s, echo", err)
+		} else {
+			log.Printf("[text_message_action.Do] echo")
 		}
 	}
 
 	return
-}
-
-func testdayo(tma *TextMessageAction) error {
-	_, err := tma.BotClient.ReplyMessage(tma.Event.ReplyToken, origin.NewTextMessage("テストへの返信")).Do()
-	if err != nil {
-		return err
-	}
-	return nil
-}
-
-func tellID(tma *TextMessageAction) error {
-	replyText := ""
-	if tma.Event.Source.UserID != "" {
-		replyText += fmt.Sprintf("あなたのID:%s\n", tma.Event.Source.UserID)
-	}
-	if tma.Event.Source.RoomID != "" {
-		replyText += fmt.Sprintf("この部屋のID:%s\n", tma.Event.Source.RoomID)
-	}
-	if tma.Event.Source.GroupID != "" {
-		replyText += fmt.Sprintf("あなたのID:%s\n", tma.Event.Source.GroupID)
-	}
-	replyText += "だよ！"
-	_, err := tma.BotClient.ReplyMessage(tma.Event.ReplyToken, origin.NewTextMessage(replyText)).Do()
-	if err != nil {
-		return err
-	}
-	return nil
 }
 
 func echo(tma *TextMessageAction) error {

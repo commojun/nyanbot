@@ -75,10 +75,10 @@ func (bot *LineBot) ActByEvents() {
 				tma := text_message_action.New(bot.Client, event, message)
 				tma.Do()
 			default:
-				log.Printf("[linebot.ActByEvents] message: %s, event: %s", message, event)
+				log.Printf("[linebot.ActByEvents] message: %s", message)
 			}
 		} else {
-			log.Printf("[linebot.ActByEvents] event: %s", event)
+			log.Printf("[linebot.ActByEvents] event: %s", event.Type)
 		}
 		if err != nil {
 			log.Printf("[linebot.ActByEvents] error: %s, event: %s", err, event)
