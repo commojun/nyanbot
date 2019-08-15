@@ -4,20 +4,21 @@ import (
 	"log"
 	"strings"
 
+	"github.com/commojun/nyanbot/app/linebot"
 	origin "github.com/line/line-bot-sdk-go/linebot"
 )
 
 type TextMessageAction struct {
-	BotClient *origin.Client
-	Event     *origin.Event
-	Message   *origin.TextMessage
+	Bot     *linebot.LineBot
+	Event   *origin.Event
+	Message *origin.TextMessage
 }
 
-func New(cli *origin.Client, event *origin.Event, msg *origin.TextMessage) *TextMessageAction {
+func New(bot *linebot.LineBot, event *origin.Event, msg *origin.TextMessage) *TextMessageAction {
 	return &TextMessageAction{
-		BotClient: cli,
-		Event:     event,
-		Message:   msg,
+		Bot:     bot,
+		Event:   event,
+		Message: msg,
 	}
 }
 
@@ -30,6 +31,7 @@ func actions() []Action {
 	return []Action{
 		testdayo,
 		tellID,
+		export,
 	}
 }
 
@@ -39,20 +41,20 @@ func (tma *TextMessageAction) Do() {
 	for _, action := range actions() {
 		if strings.HasPrefix(tma.Message.Text, action.Prefix) {
 			err = action.Do(tma)
+			actFlg = true
 			if err != nil {
-				log.Printf("[text_message_action.Do] error: %s, actionPrefix: %s", err, action.Prefix)
+				log.Printf("[text_message_action.Do] actionPrefix: %s, error: %s", action.Prefix, err)
 			} else {
 				log.Printf("[text_message_action.Do] actionPrefix: %s", action.Prefix)
-				actFlg = true
 			}
 		}
 	}
 	if !actFlg {
 		err = echo(tma)
 		if err != nil {
-			log.Printf("[text_message_action.Do] error: %s, echo", err)
+			log.Printf("[text_message_action.Do] action: echo, error: %s, ", err)
 		} else {
-			log.Printf("[text_message_action.Do] echo")
+			log.Printf("[text_message_action.Do] action: echo")
 		}
 	}
 
@@ -60,7 +62,7 @@ func (tma *TextMessageAction) Do() {
 }
 
 func echo(tma *TextMessageAction) error {
-	_, err := tma.BotClient.ReplyMessage(tma.Event.ReplyToken, origin.NewTextMessage(tma.Message.Text)).Do()
+	err := tma.Bot.TextReply(tma.Message.Text, tma.Event.ReplyToken)
 	if err != nil {
 		return err
 	}

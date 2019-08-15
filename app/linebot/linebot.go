@@ -1,9 +1,6 @@
 package linebot
 
 import (
-	"log"
-
-	"github.com/commojun/nyanbot/app/linebot/text_message_action"
 	"github.com/commojun/nyanbot/app/redis"
 	"github.com/commojun/nyanbot/constant"
 	"github.com/commojun/nyanbot/masterdata/key_value"
@@ -35,7 +32,7 @@ func IsInvalidSignature(err error) bool {
 }
 
 func (bot *LineBot) TextMessage(msg string) error {
-	err := bot.textMessageWithRoomID(msg, bot.DefaultRoomID)
+	err := bot.TextMessageWithRoomID(msg, bot.DefaultRoomID)
 	if err != nil {
 		return err
 	}
@@ -49,14 +46,14 @@ func (bot *LineBot) TextMessageWithRoomKey(msg string, roomKey string) error {
 		return err
 	}
 
-	err = bot.textMessageWithRoomID(msg, roomID)
+	err = bot.TextMessageWithRoomID(msg, roomID)
 	if err != nil {
 		return err
 	}
 	return nil
 }
 
-func (bot *LineBot) textMessageWithRoomID(msg string, roomID string) error {
+func (bot *LineBot) TextMessageWithRoomID(msg string, roomID string) error {
 	textMsg := origin.NewTextMessage(msg)
 	_, err := bot.Client.PushMessage(roomID, textMsg).Do()
 	if err != nil {
@@ -66,23 +63,12 @@ func (bot *LineBot) textMessageWithRoomID(msg string, roomID string) error {
 	return nil
 }
 
-func (bot *LineBot) ActByEvents() {
-	for _, event := range bot.Events {
-		var err error
-		if event.Type == origin.EventTypeMessage {
-			switch message := event.Message.(type) {
-			case *origin.TextMessage:
-				tma := text_message_action.New(bot.Client, event, message)
-				tma.Do()
-			default:
-				log.Printf("[linebot.ActByEvents] message: %s", message)
-			}
-		} else {
-			log.Printf("[linebot.ActByEvents] event: %s", event.Type)
-		}
-		if err != nil {
-			log.Printf("[linebot.ActByEvents] error: %s, event: %s", err, event)
-		}
+func (bot *LineBot) TextReply(msg string, replyToken string) error {
+	textMsg := origin.NewTextMessage(msg)
+	_, err := bot.Client.ReplyMessage(replyToken, textMsg).Do()
+	if err != nil {
+		return err
 	}
-	return
+
+	return nil
 }

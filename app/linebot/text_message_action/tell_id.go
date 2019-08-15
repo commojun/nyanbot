@@ -2,8 +2,6 @@ package text_message_action
 
 import (
 	"fmt"
-
-	origin "github.com/line/line-bot-sdk-go/linebot"
 )
 
 var (
@@ -25,7 +23,7 @@ func doTellID(tma *TextMessageAction) error {
 		replyText += fmt.Sprintf("このグループのID: %s\n", tma.Event.Source.GroupID)
 	}
 	replyText += "だよ！"
-	_, err := tma.BotClient.ReplyMessage(tma.Event.ReplyToken, origin.NewTextMessage(replyText)).Do()
+	err := tma.Bot.TextReply(replyText, tma.Event.ReplyToken)
 	if err != nil {
 		return err
 	}
