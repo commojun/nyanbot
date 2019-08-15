@@ -50,10 +50,10 @@ func (api *API) MakeHundleFunc() (string, func(http.ResponseWriter, *http.Reques
 
 		if err != nil {
 			// エラーを作る
-			res.Message = fmt.Sprintf("[API:%s] %d error: %s, request: %s", api.Name, res.Status, err, *req)
+			res.Message = fmt.Sprintf("[API:%s] %d error: %s", api.Name, res.Status, err)
 			log.Println(res.Message)
 		} else {
-			log.Printf("[API:%s] %d OK, request: %s", api.Name, res.Status, *req)
+			log.Printf("[API:%s] %d OK", api.Name, res.Status)
 		}
 
 		w.WriteHeader(res.Status)
