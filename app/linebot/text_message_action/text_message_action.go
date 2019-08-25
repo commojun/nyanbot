@@ -33,6 +33,7 @@ func actions() []Action {
 		tellID,
 		export,
 		ojiline,
+		drawFortune,
 	}
 }
 
