@@ -34,7 +34,8 @@ func New() (*Server, error) {
 
 func (server *Server) Start() error {
 	for _, api := range server.APIs {
-		http.HandleFunc(api.MakeHundleFunc())
+		newApi := api
+		http.HandleFunc(newApi.MakeHundleFunc())
 		log.Printf("Registered API: %s", api.Name)
 	}
 
