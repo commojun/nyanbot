@@ -7,6 +7,7 @@ import (
 	"log"
 	"net/http"
 	"strconv"
+	"strings"
 )
 
 type API struct {
@@ -70,7 +71,7 @@ func parseJSONRequest(req *http.Request, i interface{}) error {
 	}
 
 	// JSONでないと受け付けない
-	if req.Header.Get("Content-Type") != "application/json" {
+	if !strings.Contains(req.Header.Get("Content-Type"), "application/json") {
 		return fmt.Errorf("Content-Type is not JSON")
 	}
 
