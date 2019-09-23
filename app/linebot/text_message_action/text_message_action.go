@@ -34,6 +34,7 @@ func actions() []Action {
 		export,
 		ojiline,
 		drawFortune,
+		randomAnniversary,
 	}
 }
 

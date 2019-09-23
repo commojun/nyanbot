@@ -3,6 +3,7 @@ package anniversary
 import (
 	"fmt"
 	"log"
+	"math/rand"
 	"strconv"
 	"time"
 
@@ -17,7 +18,7 @@ type AnniversaryManager struct {
 }
 
 var (
-	TEMPLATE = "今日で%sから%d%sだよ！"
+	TEMPLATE = "今日は%sから%d%sだよ！"
 )
 
 func New() (*AnniversaryManager, error) {
@@ -51,10 +52,22 @@ func (am *AnniversaryManager) Run() error {
 				return err
 			}
 		} else {
-			log.Printf("msg: %s", msg)
+			log.Printf("did not send: %s", msg)
 		}
 	}
 	return nil
+}
+
+func (am *AnniversaryManager) RandomMsg() (string, error) {
+	rand.Seed(time.Now().UnixNano())
+	a := am.Anniversaries[rand.Intn(len(am.Anniversaries))]
+
+	msg, _, err := MakeCheckMessage(&a, time_util.LocalTime())
+	if err != nil {
+		return "", err
+	}
+
+	return msg, nil
 }
 
 func MakeCheckMessage(a *table.Anniversary, now time.Time) (string, bool, error) {
