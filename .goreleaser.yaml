@@ -1,0 +1,72 @@
+before:
+  hooks:
+    - go mod tidy
+builds:
+  - main: ./cmd/alarm/alarm.go
+    id: "alarm"
+    binary: nyan-alarm
+    goos:
+      - linux
+    goarch:
+      - amd64
+      - arm
+      - arm64
+  - main: ./cmd/anniversary/anniversary.go
+    id: "anniversary"
+    binary: nyan-anniversary
+    goos:
+      - linux
+    goarch:
+      - amd64
+      - arm
+      - arm64
+  - main: ./cmd/echo/echo.go
+    id: "echo"
+    binary: nyan-echo
+    goos:
+      - linux
+    goarch:
+      - amd64
+      - arm
+      - arm64
+  - main: ./cmd/hello/hello.go
+    id: "hello"
+    binary: nyan-hello
+    goos:
+      - linux
+    goarch:
+      - amd64
+      - arm
+      - arm64
+  - main: ./cmd/init/init.go
+    id: "init"
+    binary: nyan-init
+    goos:
+      - linux
+    goarch:
+      - amd64
+      - arm
+      - arm64
+  - main: ./cmd/server/server.go
+    id: "server"
+    binary: nyan-server
+    goos:
+      - linux
+    goarch:
+      - amd64
+      - arm
+      - arm64
+archives:
+  - replacements:
+      linux: Linux
+      amd64: x86_64
+checksum:
+  name_template: 'checksums.txt'
+snapshot:
+  name_template: "{{ .Tag }}-next"
+changelog:
+  sort: asc
+  filters:
+    exclude:
+      - '^docs:'
+      - '^test:'

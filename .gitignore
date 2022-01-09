@@ -18,3 +18,5 @@ config.yml
 vendor
 
 bin
+
+dist/
