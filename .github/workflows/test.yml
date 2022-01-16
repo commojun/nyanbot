@@ -10,7 +10,7 @@ jobs:
       -
         name: hgoe
         run: |
-          VERSION=$(echo ${{ github.ref_name }} | sed -e 's/v//')
+          VERSION=$(echo ${{ github.ref_name }} | sed -e 's/ma/mama/')
           echo "VERSION=`$VERSION`" >> $GITHUB_ENV
       -
         name: hgoe2
