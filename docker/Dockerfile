@@ -1,11 +1,13 @@
 FROM debian:bullseye AS builder
 
-ARG TARGETPLATFORM
+ARG TARGETPLATFORM="linux/amd64"
 ARG VERSION=0.0.2
 
 RUN apt-get update && apt-get install wget -y
-RUN wget -o nyanbot.tar.gz https://github.com/commojun/nyanbot/releases/download/v${VERSION}/nyanbot_${VERSION}_Linux_armv6.tar.gz && \
-    tar -xvf ./nyanbot_${VERSION}_Linux_armv6.tar.gz
+RUN PF=`echo ${TARGETPLATFORM} | sed -e 's|/|_|g'` && \
+    echo $PF && \
+    wget -o nyanbot.tar.gz https://github.com/commojun/nyanbot/releases/download/v${VERSION}/nyanbot_${VERSION}_$PF.tar.gz && \
+    tar -xvf ./nyanbot_${VERSION}_$PF.tar.gz
 
 FROM debian:bullseye-slim
 
