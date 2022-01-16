@@ -11,6 +11,9 @@ builds:
       - amd64
       - arm
       - arm64
+    goarm:
+      - 6
+      - 7
   - main: ./cmd/anniversary/anniversary.go
     id: "anniversary"
     binary: nyan-anniversary
@@ -20,6 +23,9 @@ builds:
       - amd64
       - arm
       - arm64
+    goarm:
+      - 6
+      - 7
   - main: ./cmd/echo/echo.go
     id: "echo"
     binary: nyan-echo
@@ -29,6 +35,9 @@ builds:
       - amd64
       - arm
       - arm64
+    goarm:
+      - 6
+      - 7
   - main: ./cmd/hello/hello.go
     id: "hello"
     binary: nyan-hello
@@ -38,6 +47,9 @@ builds:
       - amd64
       - arm
       - arm64
+    goarm:
+      - 6
+      - 7
   - main: ./cmd/init/init.go
     id: "init"
     binary: nyan-init
@@ -47,6 +59,9 @@ builds:
       - amd64
       - arm
       - arm64
+    goarm:
+      - 6
+      - 7
   - main: ./cmd/server/server.go
     id: "server"
     binary: nyan-server
@@ -56,10 +71,11 @@ builds:
       - amd64
       - arm
       - arm64
+    goarm:
+      - 6
+      - 7
 archives:
-  - replacements:
-      linux: Linux
-      amd64: x86_64
+  - name_template: "{{ .Binary }}_{{ .Version }}_{{ .Os }}_{{ .Arch }}{{ if .Arm }}_v{{ .Arm }}{{ end }}{{ if .Mips }}_{{ .Mips }}{{ end }}"
 checksum:
   name_template: 'checksums.txt'
 snapshot:
