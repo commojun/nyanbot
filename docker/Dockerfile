@@ -1,7 +1,7 @@
 FROM debian:bullseye AS builder
 
 ARG TARGETPLATFORM="linux/amd64"
-ARG VERSION=0.0.2
+ARG VERSION
 
 RUN apt-get update && apt-get install wget -y
 RUN PF=`echo ${TARGETPLATFORM} | sed -e 's|/|_|g'` && \
