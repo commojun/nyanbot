@@ -1,5 +1,5 @@
 PROJECT_NAME=nyanbot
-VERSION=0.0.3
+VERSION?=0.0.4
 
 testall:
 	go test ./...
@@ -11,7 +11,8 @@ release:
 dockerbuild:
 	cd docker/ && \
 	docker buildx build \
-		-t commojun/nyanbot:$(VERSION) \
-		--platform linux/amd64,linux/arm \
+		-t commojun/nyanb:$(VERSION) \
+		--platform linux/amd64,linux/arm/v7,linux/arm/v6 \
 		--build-arg VERSION=$(VERSION) \
+		--push \
 		-f ./Dockerfile .

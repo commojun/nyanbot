@@ -1,6 +1,6 @@
 FROM debian:bullseye AS builder
 
-ARG TARGETPLATFORM="linux/amd64"
+ARG TARGETPLATFORM
 ARG VERSION
 
 RUN apt-get update && apt-get install wget -y
