@@ -36,7 +36,6 @@ jobs:
           fetch-depth: 0
       -
         name: Set version to env
-        description: 'ex) v0.0.1 -> 0.0.1'
         run: |
           VERSION=`echo ${{ github.ref_name }} | sed -e 's/v//'`
           echo "VERSION=`$VERSION`" >> $GITHUB_ENV
