@@ -1,4 +1,4 @@
 PATH=/go/bin:/usr/bin:/bin
 NYAN_USER_DIR=/root/nyanbot
 
-* * * * * alarm
+* * * * * nyan-alarm

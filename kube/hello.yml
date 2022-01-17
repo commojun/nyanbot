@@ -1,0 +1,24 @@
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: hello
+  namespace: nyan
+  labels:
+    app: hello
+spec:
+  template:
+    metadata:
+      labels:
+        app: hello
+    spec:
+      containers:
+      - name: hello
+        image: commojun/nyanbot:0.0.10
+        env:
+        - name: TZ
+          value: Asia/Tokyo
+        envFrom:
+        - secretRef:
+            name: nyan-secret
+        command: ["nyan-hello"]
+      restartPolicy: Never
