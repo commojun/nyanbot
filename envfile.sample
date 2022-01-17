@@ -1,0 +1,13 @@
+NYAN_SERVER_PORT=portnum
+NYAN_MESSAGE_TOKEN=token
+NYAN_REDIS_HOST=redis:6379
+
+NYAN_CHANNEL_SECRET=line_channel_secret
+NYAN_ACCESS_TOKEN=line_access_token
+NYAN_DEFAULT_ROOM_ID=default_room_id
+
+NYAN_SHEET_ID=sheet_id
+NYAN_GOOGLE_CLIENT_EMAIL=service_account_email
+NYAN_GOOGLE_PRIVATE_KEY=private_key
+NYAN_GOOGLE_PRIVATE_KEY_ID=private_key_id
+NYAN_GOOGLE_TOKEN_URL=https://oauth2.googleapis.com/token
