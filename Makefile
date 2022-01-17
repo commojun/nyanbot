@@ -1,5 +1,5 @@
 PROJECT_NAME=nyanbot
-VERSION?=0.0.9
+VERSION?=0.0.10
 
 testall:
 	go test ./...
