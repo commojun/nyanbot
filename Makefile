@@ -17,10 +17,14 @@ dockerbuild:
 		--push \
 		-f ./Dockerfile .
 
+pods:
+	kubectl get pods
+
 init:
 	kubectl apply \
 	-f ./kube/namespace.yml \
-	-f ./kube/redis.yml
+	-f ./kube/redis.yml \
+	-f ./kube/server.yml
 
 deploy:
 	kubectl apply \
@@ -40,5 +44,5 @@ hello:
 	kubectl apply -f kube/hello.yml
 
 export:
-	kubectl delete -f kube/init.yml
-	kubectl apply -f kube/init.yml
+	-kubectl delete -f kube/export.yml
+	kubectl apply -f kube/export.yml

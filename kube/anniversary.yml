@@ -1,0 +1,27 @@
+apiVersion: batch/v1beta1
+kind: CronJob
+metadata:
+  name: anniversary
+  namespace: nyan
+spec:
+  schedule: "0 1 * * *"
+  successfulJobsHistoryLimit: 10
+  failedJobsHistoryLimit: 10
+  jobTemplate:
+    spec:
+      template:
+        metadata:
+          labels:
+            app: anniversary
+        spec:
+          restartPolicy: Never
+          containers:
+          - name: anniversary
+            image: commojun/nyanbot:0.0.10
+            command: ["nyan-anniversary"]
+            env:
+            - name: TZ
+              value: Asia/Tokyo
+            envFrom:
+            - secretRef:
+                name: nyan-secret

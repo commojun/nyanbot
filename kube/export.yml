@@ -1,0 +1,21 @@
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: export
+  namespace: nyan
+  labels:
+    app: export
+spec:
+  template:
+    metadata:
+      labels:
+        app: export
+    spec:
+      restartPolicy: Never
+      containers:
+      - name: export
+        image: commojun/nyanbot:0.0.10
+        command: ["nyan-init"]
+        envFrom:
+        - secretRef:
+            name: nyan-secret
