@@ -1,24 +1,24 @@
 apiVersion: batch/v1
 kind: CronJob
 metadata:
-  name: anniversary
+  name: alarm
   namespace: nyan
 spec:
-  schedule: "0 1 * * *"
-  successfulJobsHistoryLimit: 3
-  failedJobsHistoryLimit: 2
+  schedule: "*/1 * * * *"
+  successfulJobsHistoryLimit: 10
+  failedJobsHistoryLimit: 5
   jobTemplate:
     spec:
       template:
         metadata:
           labels:
-            app: anniversary
+            app: alarm
         spec:
           restartPolicy: Never
           containers:
-          - name: anniversary
+          - name: alarm
             image: commojun/nyanbot:0.0.10
-            command: ["nyan-anniversary"]
+            command: ["nyan-alarm"]
             envFrom:
             - secretRef:
                 name: nyan-secret

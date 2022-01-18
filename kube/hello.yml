@@ -14,9 +14,6 @@ spec:
       containers:
       - name: hello
         image: commojun/nyanbot:0.0.10
-        env:
-        - name: TZ
-          value: Asia/Tokyo
         envFrom:
         - secretRef:
             name: nyan-secret

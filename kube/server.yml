@@ -37,9 +37,6 @@ spec:
         ports:
         - containerPort: 30001
         command: ["nyan-server"]
-        env:
-        - name: TZ
-          value: Asia/Tokyo
         envFrom:
         - secretRef:
             name: nyan-secret
