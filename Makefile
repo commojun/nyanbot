@@ -17,14 +17,18 @@ dockerbuild:
 		--push \
 		-f ./Dockerfile .
 
+get-all:
+	kubectl get all
+
 pods:
-	kubectl get pods
+	kubectl get pods --watch
 
 init:
 	kubectl apply \
 	-f ./kube/namespace.yml \
 	-f ./kube/redis.yml \
-	-f ./kube/server.yml
+	-f ./kube/server.yml \
+	-f ./kube/anniversary.yml
 
 deploy:
 	kubectl apply \
@@ -46,3 +50,13 @@ hello:
 export:
 	-kubectl delete -f kube/export.yml
 	kubectl apply -f kube/export.yml
+
+logs/%:
+	kubectl logs --timestamps=true --prefix=true -f -l app=$*
+
+logs-all:
+	kubectl logs --timestamps=true --prefix=true -f -l app
+
+shell/%:
+	kubectl exec -it $* -- bash
+
