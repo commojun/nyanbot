@@ -45,6 +45,7 @@ redis-cli:
 	kubectl exec -it redis redis-cli
 
 hello:
+	-kubectl delete -f kube/hello.yml
 	kubectl apply -f kube/hello.yml
 
 export:

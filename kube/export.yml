@@ -14,7 +14,7 @@ spec:
       restartPolicy: Never
       containers:
       - name: export
-        image: commojun/nyanbot:0.0.10
+        image: commojun/nyanbot:0.0.11
         command: ["nyan", "export"]
         envFrom:
         - secretRef:
