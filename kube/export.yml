@@ -15,7 +15,7 @@ spec:
       containers:
       - name: export
         image: commojun/nyanbot:0.0.10
-        command: ["nyan-init"]
+        command: ["nyan", "export"]
         envFrom:
         - secretRef:
             name: nyan-secret

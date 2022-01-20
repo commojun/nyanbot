@@ -17,8 +17,8 @@ spec:
           restartPolicy: Never
           containers:
           - name: alarm
-            image: commojun/nyanbot:0.0.10
-            command: ["nyan-alarm"]
+            image: commojun/nyanbot:0.0.11
+            command: ["nyan", "alarm"]
             envFrom:
             - secretRef:
                 name: nyan-secret

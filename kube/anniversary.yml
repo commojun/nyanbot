@@ -17,8 +17,8 @@ spec:
           restartPolicy: Never
           containers:
           - name: anniversary
-            image: commojun/nyanbot:0.0.10
-            command: ["nyan-anniversary"]
+            image: commojun/nyanbot:0.0.11
+            command: ["nyan", "anniversary"]
             envFrom:
             - secretRef:
                 name: nyan-secret

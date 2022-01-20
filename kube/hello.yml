@@ -17,5 +17,5 @@ spec:
         envFrom:
         - secretRef:
             name: nyan-secret
-        command: ["nyan-hello"]
+        command: ["nyan", "hello"]
       restartPolicy: Never

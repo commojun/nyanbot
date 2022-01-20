@@ -33,15 +33,15 @@ spec:
     spec:
       containers:
       - name: server
-        image: commojun/nyanbot:0.0.10
+        image: commojun/nyanbot:0.0.11
         ports:
         - containerPort: 30001
-        command: ["nyan-server"]
+        command: ["nyan", "server"]
         envFrom:
         - secretRef:
             name: nyan-secret
         lifecycle:
           postStart:
             exec:
-              command: ["nyan-init"]
+              command: ["nyan", "export"]
 
