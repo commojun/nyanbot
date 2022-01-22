@@ -4,7 +4,7 @@ metadata:
   name: anniversary
   namespace: nyan
 spec:
-  schedule: "0 1 * * *"
+  schedule: "0 10 * * *"
   successfulJobsHistoryLimit: 3
   failedJobsHistoryLimit: 2
   jobTemplate:
