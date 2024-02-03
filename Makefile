@@ -42,7 +42,7 @@ secret:
 		--from-env-file ./envfile
 
 redis-cli:
-	kubectl exec -it redis redis-cli
+	kubectl exec -it redis -- redis-cli
 
 hello:
 	-kubectl delete -f kube/hello.yml
