@@ -11,3 +11,5 @@ NYAN_GOOGLE_CLIENT_EMAIL=service_account_email
 NYAN_GOOGLE_PRIVATE_KEY=private_key
 NYAN_GOOGLE_PRIVATE_KEY_ID=private_key_id
 NYAN_GOOGLE_TOKEN_URL=https://oauth2.googleapis.com/token
+
+TUNNEL_TOKEN=hoge
