@@ -42,14 +42,15 @@
 5. **`app/alarm/alarm.go`**: `table.Alarms()`でRedisから読み込み
 6. **`app/anniversary/anniversary.go`**: `table.Anniversaries()`でRedisから読み込み
 
-## 提案アーキテクチャ: グローバルメモリキャッシュ
+## 提案アーキテクチャ: シンプルメモリキャッシュ
 
-### 設計方針
+### 設計方針（改訂版）
 
-1. **Pod起動時の一括ロード**: サーバー起動時に全データをGoogle Sheetsから読み込む
-2. **グローバルシングルトンキャッシュ**: パッケージレベルの変数でデータを保持
-3. **オンデマンド再読み込み**: 必要に応じて手動でデータを再取得できる関数/エンドポイントを提供
-4. **並行アクセス安全性**: 読み取り専用運用を前提とし、更新時のみロックを使用
+1. **Pod起動時の一括ロード**: 全コマンド（server, alarm, anniversary）起動時に、Google Sheetsから読み込む
+2. **各Pod独立**: Pod間のデータ共有は考慮せず、各Podが独自のメモリキャッシュを持つ
+3. **リトライ機能**: Google Sheets API呼び出しは3回リトライ。失敗時はPod起動を失敗させる
+4. **並行アクセス制御不要**: 各Podのメモリ内で完結するため、ロック機構は不要
+5. **再読み込みエンドポイント**: Pod再起動せずにデータを更新できるエンドポイントを提供（オプション）
 
 ### 実装案
 
@@ -60,97 +61,185 @@
 package cache
 
 import (
-    "sync"
+    "fmt"
+    "log"
+    "time"
+
+    "github.com/Songmu/retry"
     "github.com/commojun/nyanbot/masterdata/table"
     "github.com/commojun/nyanbot/masterdata/key_value"
 )
 
 var (
-    // グローバルキャッシュインスタンス
+    // グローバルキャッシュインスタンス（Pod内でシングルトン）
     globalCache *Cache
-    once        sync.Once
-    mu          sync.RWMutex
 )
 
 type Cache struct {
-    Tables   *table.Tables
-    KeyVals  *key_value.KVs
+    Tables  *table.Tables
+    KeyVals *key_value.KVs
 }
 
-// Initialize: Pod起動時に一度だけ呼ばれる
+// Initialize: Pod起動時に一度だけ呼ばれる（リトライあり）
 func Initialize() error {
-    var err error
-    once.Do(func() {
-        globalCache = &Cache{}
-        err = globalCache.Reload()
+    if globalCache != nil {
+        return nil // 既に初期化済み
+    }
+
+    var cache *Cache
+    err := retry.Retry(3, 2*time.Second, func() error {
+        log.Println("Attempting to load data from Google Sheets...")
+        c, err := loadFromSheet()
+        if err != nil {
+            log.Printf("Failed to load from Google Sheets: %v", err)
+            return err
+        }
+        cache = c
+        return nil
     })
-    return err
+
+    if err != nil {
+        return fmt.Errorf("failed to initialize cache after 3 retries: %w", err)
+    }
+
+    globalCache = cache
+    log.Println("Cache initialized successfully")
+    return nil
 }
 
-// Reload: Google Sheetsから再読み込み
-func (c *Cache) Reload() error {
-    mu.Lock()
-    defer mu.Unlock()
-
+// loadFromSheet: Google Sheetsから全データを読み込む
+func loadFromSheet() (*Cache, error) {
     // テーブルデータを読み込み
     tables := &table.Tables{}
     if err := tables.LoadTablesFromSheet(); err != nil {
-        return err
+        return nil, fmt.Errorf("failed to load tables: %w", err)
     }
 
     // Key-Valueデータを読み込み
     kvs := &key_value.KVs{}
     if err := kvs.LoadKVsFromSheet(); err != nil {
-        return err
+        return nil, fmt.Errorf("failed to load key-values: %w", err)
     }
 
-    c.Tables = tables
-    c.KeyVals = kvs
+    return &Cache{
+        Tables:  tables,
+        KeyVals: kvs,
+    }, nil
+}
+
+// Reload: Google Sheetsから再読み込み（再読み込みエンドポイント用）
+func Reload() error {
+    log.Println("Reloading cache from Google Sheets...")
+    cache, err := loadFromSheet()
+    if err != nil {
+        return err
+    }
+    globalCache = cache
+    log.Println("Cache reloaded successfully")
     return nil
 }
 
 // Get: グローバルキャッシュを取得
 func Get() *Cache {
-    mu.RLock()
-    defer mu.RUnlock()
     return globalCache
 }
 
 // GetAlarms: アラームデータを取得
 func GetAlarms() []table.Alarm {
-    return Get().Tables.Alarms
+    if globalCache == nil {
+        return []table.Alarm{}
+    }
+    return globalCache.Tables.Alarms
 }
 
 // GetAnniversaries: 記念日データを取得
 func GetAnniversaries() []table.Anniversary {
-    return Get().Tables.Anniversaries
+    if globalCache == nil {
+        return []table.Anniversary{}
+    }
+    return globalCache.Tables.Anniversaries
 }
 
 // GetRoomID: ルームキーからルームIDを取得
 func GetRoomID(roomKey string) (string, error) {
-    roomID, ok := Get().KeyVals.Rooms[roomKey]
+    if globalCache == nil {
+        return "", fmt.Errorf("cache not initialized")
+    }
+    roomID, ok := globalCache.KeyVals.Rooms[roomKey]
     if !ok {
         return "", fmt.Errorf("room key not found: %s", roomKey)
     }
     return roomID, nil
+}
+
+// SetTestCache: テスト用にキャッシュをセット
+func SetTestCache(c *Cache) {
+    globalCache = c
 }
 ```
 
 #### 既存コードの修正
 
 1. **`cmd/nyan/nyan.go`**
-   - `Server()`関数の開始時に`cache.Initialize()`を呼び出す
-   - `Export()`コマンドは削除、または`cache.Get().Reload()`に変更
+   - 全コマンド（`Server()`, `Alarm()`, `Anniversary()`, `Hello()`）の開始時に`cache.Initialize()`を呼び出す
+   - `Export()`コマンドは削除（不要になる）
+
+   ```go
+   func Server() {
+       if err := cache.Initialize(); err != nil {
+           log.Fatal(err)
+       }
+
+       server, err := nyanbot.NewServer()
+       if err != nil {
+           log.Fatal(err)
+       }
+       // ...
+   }
+
+   func Alarm() {
+       if err := cache.Initialize(); err != nil {
+           log.Fatal(err)
+       }
+
+       alm, err := alarm.New()
+       // ...
+   }
+
+   func Anniversary() {
+       if err := cache.Initialize(); err != nil {
+           log.Fatal(err)
+       }
+
+       anniv, err := anniversary.New()
+       // ...
+   }
+   ```
 
 2. **`masterdata/table/table.go`**
    - `RestoreFromRedis()`削除
    - `SaveToRedis()`削除
-   - `Alarms()`, `Anniversaries()`は`cache.GetAlarms()`などに置き換え
+   - `Initialize()`削除（Redisへの保存が不要になる）
 
-3. **`masterdata/key_value/key_value.go`**
+3. **`masterdata/table/alarm.go`**
+   ```go
+   func Alarms() ([]Alarm, error) {
+       return cache.GetAlarms(), nil
+   }
+   ```
+
+4. **`masterdata/table/anniversary.go`**
+   ```go
+   func Anniversaries() ([]Anniversary, error) {
+       return cache.GetAnniversaries(), nil
+   }
+   ```
+
+5. **`masterdata/key_value/key_value.go`**
    - `SaveToRedis()`削除
+   - `Initialize()`修正（Redisへの保存を削除）
 
-4. **`app/linebot/linebot.go`**
+6. **`app/linebot/linebot.go`**
    ```go
    func (bot *LineBot) TextMessageWithRoomKey(msg string, roomKey string) error {
        roomID, err := cache.GetRoomID(roomKey)
@@ -161,23 +250,13 @@ func GetRoomID(roomKey string) (string, error) {
    }
    ```
 
-5. **`app/alarm/alarm.go`**
-   ```go
-   func New() (*AlarmManager, error) {
-       alms := cache.GetAlarms()
-       // ...
-   }
-   ```
+7. **`app/alarm/alarm.go`**
+   - `table.Alarms()`の呼び出しは変更不要（内部実装が変わるだけ）
 
-6. **`app/anniversary/anniversary.go`**
-   ```go
-   func New() (*AnniversaryManager, error) {
-       annivs := cache.GetAnniversaries()
-       // ...
-   }
-   ```
+8. **`app/anniversary/anniversary.go`**
+   - `table.Anniversaries()`の呼び出しは変更不要（内部実装が変わるだけ）
 
-### 再読み込みエンドポイントの追加
+### 再読み込みエンドポイントの追加（オプション）
 
 データを更新した際に、Podを再起動せずに反映するためのエンドポイント:
 
@@ -191,7 +270,7 @@ import (
 )
 
 func Handler(w http.ResponseWriter, r *http.Request) {
-    if err := cache.Get().Reload(); err != nil {
+    if err := cache.Reload(); err != nil {
         http.Error(w, err.Error(), http.StatusInternalServerError)
         return
     }
@@ -199,36 +278,105 @@ func Handler(w http.ResponseWriter, r *http.Request) {
 }
 ```
 
-## 移行ステップ
+**注意**: このエンドポイントは認証なしなので、本番環境では適切な認証機構を追加すること。
 
-### フェーズ1: メモリキャッシュの実装（Redisと並行稼働）
+## 移行ステップ（改訂版）
+
+### フェーズ1: メモリキャッシュの実装と基本機能の置き換え
+
+**目的**: Redisを使わない新しいキャッシュ機構を実装
 
 1. `cache/cache.go`パッケージを作成
-2. `Initialize()`と`Get()`関数を実装
-3. サーバー起動時に`cache.Initialize()`を呼び出す
-4. 既存のRedis読み取り処理をキャッシュ読み取りに段階的に置き換え
-5. テストを実行して動作確認
+   - `Initialize()`: リトライ機能付きで3回試行
+   - `loadFromSheet()`: Google Sheetsから読み込むプライベート関数
+   - `Reload()`: 再読み込み用
+   - `GetAlarms()`, `GetAnniversaries()`, `GetRoomID()`: データ取得関数
+   - `SetTestCache()`: テスト用モック注入関数
 
-### フェーズ2: Redis依存の削除
+2. `cmd/nyan/nyan.go`を修正
+   - 全コマンドの先頭に`cache.Initialize()`を追加
+   - `Export()`コマンドを削除
 
-1. `app/redis/redis.go`の使用箇所をすべて削除
-2. `masterdata/table/table.go`から`SaveToRedis()`, `RestoreFromRedis()`を削除
-3. `masterdata/key_value/key_value.go`から`SaveToRedis()`を削除
-4. `cmd/nyan/nyan.go`から`Export()`コマンドを削除（または`Reload()`に変更）
-5. 環境変数`NYAN_REDIS_HOST`を削除
+3. `masterdata/table/`を修正
+   - `alarm.go`の`Alarms()`を`cache.GetAlarms()`を使うように変更
+   - `anniversary.go`の`Anniversaries()`を`cache.GetAnniversaries()`を使うように変更
+   - `table.go`から`SaveToRedis()`, `RestoreFromRedis()`を削除
 
-### フェーズ3: Kubernetesデプロイメントの更新
+4. `app/linebot/linebot.go`を修正
+   - `TextMessageWithRoomKey()`を`cache.GetRoomID()`を使うように変更
 
-1. `k8s/`配下のRedis関連リソース（Deployment, Service）を削除
-2. `Makefile`からRedis関連コマンド（`redis-cli`など）を削除
-3. Export用のCronJobを削除
-4. アプリケーションPodのRedis環境変数を削除
+5. ローカル環境でテスト実行
+   ```bash
+   make testall
+   go run cmd/nyan/nyan.go server  # 起動確認
+   go run cmd/nyan/nyan.go alarm   # アラーム実行確認
+   ```
 
-### フェーズ4: ドキュメント更新
+### フェーズ2: Redis関連コードの完全削除
+
+**目的**: Redisパッケージと依存関係を全て削除
+
+1. `app/redis/redis.go`の削除（または使用箇所がゼロになったことを確認）
+
+2. `masterdata/table/table.go`の`Initialize()`を削除
+   - これはRedisへの保存のみを行っていたため不要
+
+3. `masterdata/key_value/key_value.go`の`SaveToRedis()`を削除
+
+4. `go.mod`からRedis関連の依存を削除（必要に応じて）
+   ```bash
+   go mod tidy
+   ```
+
+5. 全テストを再実行
+   ```bash
+   make testall
+   ```
+
+### フェーズ3: Kubernetes構成の更新
+
+**目的**: Kubernetesリソースからredisを削除
+
+1. `k8s/`配下のRedis関連リソースを削除
+   - Redis Deployment
+   - Redis Service
+   - Export CronJob
+
+2. `Makefile`からRedis関連コマンドを削除
+   - `redis-cli`コマンド
+   - Redisに関連する`init`処理
+
+3. アプリケーションのDeployment/CronJob定義から環境変数`NYAN_REDIS_HOST`を削除
+
+4. `constant/constant.go`から`NYAN_REDIS_HOST`定義を削除
+
+5. デプロイして動作確認
+   ```bash
+   make deploy
+   make logs/server
+   ```
+
+### フェーズ4: ドキュメント・テスト・再読み込みエンドポイントの整備
+
+**目的**: ドキュメント更新と追加機能の実装
 
 1. `README.md`と`CLAUDE.md`のRedis関連記述を削除
-2. 新しいキャッシュアーキテクチャの説明を追加
-3. 再読み込みエンドポイントの使い方を記載
+   - アーキテクチャ図の更新
+   - データフローの説明を「Google Sheets → メモリキャッシュ」に変更
+   - `export`コマンドの説明を削除
+
+2. 再読み込みエンドポイントの実装（オプション）
+   - `api/reload/reload.go`を作成
+   - サーバーにエンドポイントを登録
+
+3. テストの整備
+   - `cache`パッケージのテストを追加
+   - `SetTestCache()`を使ってモックデータを注入するテストを追加
+
+4. 最終確認
+   - 全テストがパスすること
+   - ローカル環境で全コマンドが動作すること
+   - Kubernetes環境で本番動作確認
 
 ## メリット
 
@@ -252,24 +400,30 @@ func Handler(w http.ResponseWriter, r *http.Request) {
 ## デメリットと対策
 
 ### 1. **データの永続性がない**
-   - **対策**: Google Sheetsが真のデータソースなので問題なし
+   - **対策**: Google Sheetsが真のデータソース（Single Source of Truth）なので問題なし
+   - Podが再起動しても、起動時に最新データを読み込む
 
-### 2. **複数Pod間でデータ同期が必要**
-   - **対策**: 再読み込みエンドポイントを全Podに対して実行するか、Podを再起動
+### 2. **複数Pod間でデータ不整合の可能性**
+   - **対策**: 各Podが独立してGoogle Sheetsから読み込むため、起動タイミングによって若干のデータ差が生じる可能性がある
+   - しかし、データ更新頻度は低いため、実運用上の問題は小さい
+   - 即座の同期が必要な場合は、再読み込みエンドポイントを全Podに対して実行するか、Podを再起動
 
 ### 3. **メモリ使用量の増加**
-   - **対策**: 現状のデータ量は少ないため、影響は微小（数KB～数MB程度）
+   - **対策**: 現状のデータ量は少ない（アラーム・記念日で数十件程度）ため、影響は微小（数KB～数MB程度）
+   - Redisのネットワークオーバーヘッドがなくなるトレードオフとして十分価値がある
 
-### 4. **並行書き込みがない**
-   - **対策**: 読み取り専用運用が前提なので問題なし。更新時のみ`RWMutex`で保護
+### 4. **Google Sheets APIのレート制限**
+   - **対策**: Pod起動時のみアクセスするため、通常運用では問題なし
+   - 再読み込みエンドポイントを頻繁に叩かないように注意
 
 ## リスク評価
 
 | リスク | 発生確率 | 影響度 | 対策 |
 |--------|----------|--------|------|
-| メモリ不足 | 低 | 中 | データ量は少なく、モニタリングで監視 |
-| 複数Pod間の不整合 | 中 | 低 | 再読み込みエンドポイントで全Pod更新 |
-| Google Sheets APIレート制限 | 低 | 中 | 起動時のみアクセス、頻繁な再読み込みは避ける |
+| メモリ不足 | 低 | 低 | データ量は少なく（数十件）、問題なし |
+| 複数Pod間の不整合 | 中 | 低 | データ更新頻度が低いため影響小。必要時はPod再起動 |
+| Google Sheets APIレート制限 | 低 | 中 | 起動時のみアクセス（1回のみ）。再読み込みは手動実行 |
+| Google Sheets API障害時の起動失敗 | 低 | 高 | 3回リトライ実装。失敗時はPod起動失敗でKubernetesが再試行 |
 
 ## 成功基準
 
@@ -283,9 +437,25 @@ func Handler(w http.ResponseWriter, r *http.Request) {
 
 この計画により、nyanbotは以下を実現します:
 
-1. **シンプルなアーキテクチャ**: Redisを削除し、メモリキャッシュのみでデータ管理
-2. **低コスト**: インフラリソースの削減
-3. **高速アクセス**: ネットワークI/Oなしのメモリアクセス
-4. **柔軟な更新**: 再読み込みエンドポイントによるオンデマンド更新
+1. **シンプルなアーキテクチャ**: Redisを削除し、Pod起動時にGoogle Sheetsから読み込むメモリキャッシュのみでデータ管理
+2. **低運用コスト**: Redisコンテナが不要になり、インフラリソースとメンテナンスコストが削減
+3. **高速アクセス**: ネットワークI/O（Redis接続）なしのメモリ直接アクセス
+4. **開発体験の向上**: ローカル開発時にRedis起動不要。`export`コマンド実行も不要
+5. **各Pod独立動作**: Pod間のデータ同期を考慮しない、シンプルな設計
 
-データ量が少ないLINEボットという特性を活かし、過剰な複雑性を排除した設計に移行します。
+### 技術的な改善点
+
+- **並行制御の削除**: `sync.RWMutex`などの複雑なロック機構が不要
+- **リトライ機能**: Google Sheets API呼び出しに3回リトライを実装し、一時的な障害に対応
+- **テスト容易性**: `SetTestCache()`でモックデータを簡単に注入可能
+
+### 適用条件
+
+この設計は以下の条件下で最適です:
+
+- データ量が少ない（数十～数百件程度）
+- データ更新頻度が低い
+- 読み取り専用運用
+- Google SheetsがSingle Source of Truth
+
+nyanbotはこれらの条件を全て満たしており、Redisというオーバースペックなミドルウェアを排除することで、保守性と運用性を大幅に向上させます。
