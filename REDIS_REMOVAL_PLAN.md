@@ -50,7 +50,7 @@
 2. **各Pod独立**: Pod間のデータ共有は考慮せず、各Podが独自のメモリキャッシュを持つ
 3. **リトライ機能**: Google Sheets API呼び出しは3回リトライ。失敗時はPod起動を失敗させる
 4. **並行アクセス制御不要**: 各Podのメモリ内で完結するため、ロック機構は不要
-5. **再読み込みエンドポイント**: Pod再起動せずにデータを更新できるエンドポイントを提供（オプション）
+5. **データ更新方法**: Google Sheetsのデータを更新した際は、Podを再起動して反映（Kubernetesのローリングアップデート機能を活用）
 
 ### 実装案
 
@@ -127,17 +127,6 @@ func loadFromSheet() (*Cache, error) {
     }, nil
 }
 
-// Reload: Google Sheetsから再読み込み（再読み込みエンドポイント用）
-func Reload() error {
-    log.Println("Reloading cache from Google Sheets...")
-    cache, err := loadFromSheet()
-    if err != nil {
-        return err
-    }
-    globalCache = cache
-    log.Println("Cache reloaded successfully")
-    return nil
-}
 
 // Get: グローバルキャッシュを取得
 func Get() *Cache {
@@ -256,29 +245,39 @@ func SetTestCache(c *Cache) {
 8. **`app/anniversary/anniversary.go`**
    - `table.Anniversaries()`の呼び出しは変更不要（内部実装が変わるだけ）
 
-### 再読み込みエンドポイントの追加（オプション）
+### データ更新時の運用方法
 
-データを更新した際に、Podを再起動せずに反映するためのエンドポイント:
+Google Sheetsのデータを更新した際に、Podにデータを反映させる方法:
 
-```go
-// api/reload/reload.go
-package reload
+#### 方法1: Podの再起動（推奨）
 
-import (
-    "net/http"
-    "github.com/commojun/nyanbot/cache"
-)
+```bash
+# Deployment全体をローリング再起動
+kubectl rollout restart deployment/nyanbot-server
+kubectl rollout restart deployment/nyanbot-alarm
+kubectl rollout restart deployment/nyanbot-anniversary
 
-func Handler(w http.ResponseWriter, r *http.Request) {
-    if err := cache.Reload(); err != nil {
-        http.Error(w, err.Error(), http.StatusInternalServerError)
-        return
-    }
-    w.Write([]byte("Cache reloaded successfully"))
-}
+# または、Makefile経由で
+make restart/server
+make restart/alarm
+make restart/anniversary
 ```
 
-**注意**: このエンドポイントは認証なしなので、本番環境では適切な認証機構を追加すること。
+#### 方法2: 新しいデプロイメント
+
+```bash
+# イメージタグを変更せずに、環境変数やアノテーションを更新して再デプロイ
+kubectl patch deployment nyanbot-server -p \
+  "{\"spec\":{\"template\":{\"metadata\":{\"annotations\":{\"reloaded-at\":\"$(date +%s)\"}}}}}"
+```
+
+#### CronJob（alarm, anniversary）の場合
+
+CronJobは次回の実行時に自動的に新しいPodが起動するため、データ更新後は次回実行時に自動反映されます。即座に反映したい場合は、手動でJobを実行:
+
+```bash
+kubectl create job --from=cronjob/nyanbot-alarm manual-alarm-$(date +%s)
+```
 
 ## 移行ステップ（改訂版）
 
@@ -289,7 +288,6 @@ func Handler(w http.ResponseWriter, r *http.Request) {
 1. `cache/cache.go`パッケージを作成
    - `Initialize()`: リトライ機能付きで3回試行
    - `loadFromSheet()`: Google Sheetsから読み込むプライベート関数
-   - `Reload()`: 再読み込み用
    - `GetAlarms()`, `GetAnniversaries()`, `GetRoomID()`: データ取得関数
    - `SetTestCache()`: テスト用モック注入関数
 
@@ -356,18 +354,32 @@ func Handler(w http.ResponseWriter, r *http.Request) {
    make logs/server
    ```
 
-### フェーズ4: ドキュメント・テスト・再読み込みエンドポイントの整備
+### フェーズ4: ドキュメント・テスト・運用手順の整備
 
-**目的**: ドキュメント更新と追加機能の実装
+**目的**: ドキュメント更新と運用手順の整備
 
-1. `README.md`と`CLAUDE.md`のRedis関連記述を削除
+1. `README.md`と`CLAUDE.md`のRedis関連記述を更新
    - アーキテクチャ図の更新
    - データフローの説明を「Google Sheets → メモリキャッシュ」に変更
    - `export`コマンドの説明を削除
+   - データ更新時の運用手順（Pod再起動）を追加
 
-2. 再読み込みエンドポイントの実装（オプション）
-   - `api/reload/reload.go`を作成
-   - サーバーにエンドポイントを登録
+2. `Makefile`にPod再起動コマンドを追加
+   ```makefile
+   restart/server:
+       kubectl rollout restart deployment/nyanbot-server
+
+   restart/alarm:
+       kubectl rollout restart deployment/nyanbot-alarm
+
+   restart/anniversary:
+       kubectl rollout restart deployment/nyanbot-anniversary
+
+   restart/all:
+       make restart/server
+       make restart/alarm
+       make restart/anniversary
+   ```
 
 3. テストの整備
    - `cache`パッケージのテストを追加
@@ -377,6 +389,7 @@ func Handler(w http.ResponseWriter, r *http.Request) {
    - 全テストがパスすること
    - ローカル環境で全コマンドが動作すること
    - Kubernetes環境で本番動作確認
+   - データ更新→Pod再起動のフローを確認
 
 ## メリット
 
@@ -406,7 +419,7 @@ func Handler(w http.ResponseWriter, r *http.Request) {
 ### 2. **複数Pod間でデータ不整合の可能性**
    - **対策**: 各Podが独立してGoogle Sheetsから読み込むため、起動タイミングによって若干のデータ差が生じる可能性がある
    - しかし、データ更新頻度は低いため、実運用上の問題は小さい
-   - 即座の同期が必要な場合は、再読み込みエンドポイントを全Podに対して実行するか、Podを再起動
+   - データ更新時は`kubectl rollout restart`でローリング再起動することで、全Podに最新データを反映
 
 ### 3. **メモリ使用量の増加**
    - **対策**: 現状のデータ量は少ない（アラーム・記念日で数十件程度）ため、影響は微小（数KB～数MB程度）
@@ -414,7 +427,7 @@ func Handler(w http.ResponseWriter, r *http.Request) {
 
 ### 4. **Google Sheets APIのレート制限**
    - **対策**: Pod起動時のみアクセスするため、通常運用では問題なし
-   - 再読み込みエンドポイントを頻繁に叩かないように注意
+   - Pod再起動は手動実行のため、APIレート制限に達する心配はない
 
 ## リスク評価
 
@@ -431,7 +444,8 @@ func Handler(w http.ResponseWriter, r *http.Request) {
 - ✅ すべてのテストがパス
 - ✅ アラーム・記念日機能が正常動作
 - ✅ ドキュメントが更新されている
-- ✅ 再読み込みエンドポイントが動作
+- ✅ Pod再起動によるデータ更新フローが確立している
+- ✅ Makefileに`restart/*`コマンドが追加されている
 
 ## まとめ
 
@@ -448,6 +462,7 @@ func Handler(w http.ResponseWriter, r *http.Request) {
 - **並行制御の削除**: `sync.RWMutex`などの複雑なロック機構が不要
 - **リトライ機能**: Google Sheets API呼び出しに3回リトライを実装し、一時的な障害に対応
 - **テスト容易性**: `SetTestCache()`でモックデータを簡単に注入可能
+- **Kubernetesネイティブな運用**: Pod再起動によるデータ更新は、Kubernetesの標準的な運用パターン
 
 ### 適用条件
 
