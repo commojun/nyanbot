@@ -51,13 +51,13 @@ func actByLineEvents(bot *linebot.LineBot) {
 			case *origin.ImageMessage:
 				log.Printf("[linebot.ActByEvents] ImageMessage")
 			default:
-				log.Printf("[linebot.ActByEvents] message: %s", message)
+				log.Printf("[linebot.ActByEvents] message: %+v", message)
 			}
 		} else {
 			log.Printf("[linebot.ActByEvents] event: %s", event.Type)
 		}
 		if err != nil {
-			log.Printf("[linebot.ActByEvents] event: %s, error: %s", event, err)
+			log.Printf("[linebot.ActByEvents] event: %+v, error: %s", event, err)
 		}
 	}
 	return

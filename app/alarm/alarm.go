@@ -5,6 +5,7 @@ import (
 
 	"github.com/commojun/nyanbot/app/linebot"
 	"github.com/commojun/nyanbot/app/time_util"
+	"github.com/commojun/nyanbot/cache"
 	"github.com/commojun/nyanbot/constant"
 	"github.com/commojun/nyanbot/masterdata/table"
 )
@@ -15,10 +16,7 @@ type AlarmManager struct {
 }
 
 func New() (*AlarmManager, error) {
-	alms, err := table.Alarms()
-	if err != nil {
-		return &AlarmManager{}, err
-	}
+	alms := cache.GetAlarms()
 
 	bot, err := linebot.New()
 	if err != nil {

@@ -1,9 +1,8 @@
 package linebot
 
 import (
-	"github.com/commojun/nyanbot/app/redis"
+	"github.com/commojun/nyanbot/cache"
 	"github.com/commojun/nyanbot/constant"
-	"github.com/commojun/nyanbot/masterdata/key_value"
 	origin "github.com/line/line-bot-sdk-go/linebot"
 )
 
@@ -40,17 +39,11 @@ func (bot *LineBot) TextMessage(msg string) error {
 }
 
 func (bot *LineBot) TextMessageWithRoomKey(msg string, roomKey string) error {
-	redisClient := redis.NewClient()
-	roomID, err := redisClient.HGet(key_value.Room, roomKey).Result()
+	roomID, err := cache.GetRoomID(roomKey)
 	if err != nil {
 		return err
 	}
-
-	err = bot.TextMessageWithRoomID(msg, roomID)
-	if err != nil {
-		return err
-	}
-	return nil
+	return bot.TextMessageWithRoomID(msg, roomID)
 }
 
 func (bot *LineBot) TextMessageWithRoomID(msg string, roomID string) error {

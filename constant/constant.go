@@ -25,6 +25,4 @@ var (
 	GoogleTokenURL     = os.Getenv("NYAN_GOOGLE_TOKEN_URL")
 
 	SheetID = os.Getenv("NYAN_SHEET_ID")
-
-	RedisHost = os.Getenv("NYAN_REDIS_HOST")
 )

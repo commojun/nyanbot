@@ -4,8 +4,7 @@ import (
 	"fmt"
 
 	"github.com/commojun/nyanbot/app/fortune"
-	"github.com/commojun/nyanbot/app/redis"
-	"github.com/commojun/nyanbot/masterdata/key_value"
+	"github.com/commojun/nyanbot/cache"
 )
 
 var (
@@ -17,8 +16,7 @@ var (
 
 func doDrawFortune(tma *TextMessageAction) error {
 	// 名前取得
-	redisClient := redis.NewClient()
-	nickname, err := redisClient.HGet(key_value.Nickname, tma.Event.Source.UserID).Result()
+	nickname, err := cache.GetNickname(tma.Event.Source.UserID)
 	if err != nil {
 		nickname = "あなた"
 	}

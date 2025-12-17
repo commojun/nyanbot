@@ -40,8 +40,4 @@ spec:
         envFrom:
         - secretRef:
             name: nyan-secret
-        lifecycle:
-          postStart:
-            exec:
-              command: ["nyan", "export"]
 

@@ -31,7 +31,6 @@ func actions() []Action {
 	return []Action{
 		testdayo,
 		tellID,
-		export,
 		ojiline,
 		drawFortune,
 		randomAnniversary,
