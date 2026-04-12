@@ -11,7 +11,14 @@ import (
 	"github.com/commojun/nyanbot/app/anniversary"
 	"github.com/commojun/nyanbot/app/hello"
 	"github.com/commojun/nyanbot/cache"
+	"github.com/joho/godotenv"
 )
+
+func init() {
+	// ローカル開発用にenvfileを読み込む
+	// Kubernetes環境では環境変数が既に設定されているため、エラーは無視
+	_ = godotenv.Load("envfile")
+}
 
 func main() {
 	flag.Usage = flagUsage
