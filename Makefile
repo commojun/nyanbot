@@ -21,7 +21,7 @@ get-all:
 	kubectl get all
 
 pods:
-	kubectl get pods --watch
+	kubectl get pods -o wide --watch
 
 init:
 	kubectl apply \
