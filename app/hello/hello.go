@@ -8,12 +8,8 @@ type Hello struct {
 	Bot *linebot.LineBot
 }
 
-func New() (*Hello, error) {
-	bot, err := linebot.New()
-	if err != nil {
-		return &Hello{}, err
-	}
-	return &Hello{Bot: bot}, nil
+func New(bot *linebot.LineBot) *Hello {
+	return &Hello{Bot: bot}
 }
 
 func (hello *Hello) Say() error {

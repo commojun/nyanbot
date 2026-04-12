@@ -1,11 +1,10 @@
 package key_value
 
 import (
+	"fmt"
 	"reflect"
 
-	"github.com/commojun/nyanbot/app/redis"
 	"github.com/commojun/nyanbot/app/sheet"
-	"github.com/commojun/nyanbot/constant"
 )
 
 var (
@@ -16,74 +15,31 @@ var (
 
 type KVs struct {
 	Rooms    map[string]string `kvName:"room"`
-	Nickname map[string]string `kvName:"nickname"`
+	Nicknames map[string]string `kvName:"nickname"`
 	Tests    map[string]string `kvName:"testkv"`
 }
 
-func Initialize() (*KVs, error) {
-	kvs := KVs{}
-	err := kvs.LoadKVsFromSheet()
-	if err != nil {
-		return &kvs, err
-	}
-
-	err = kvs.SaveToRedis()
-	if err != nil {
-		return &kvs, err
-	}
-
-	return &kvs, nil
-}
-
-func (kvs *KVs) SaveToRedis() error {
-	redisClient := redis.NewClient()
-
-	kvsValue := reflect.ValueOf(*kvs)
-	for i := 0; i < kvsValue.NumField(); i++ {
-		kvName := kvsValue.Type().Field(i).Tag.Get("kvName")
-		// いったん古い情報を消す
-		err := redisClient.Del(kvName).Err()
-		if err != nil {
-			return err
-		}
-
-		for key, value := range kvsValue.Field(i).Interface().(map[string]string) {
-			// Redisに書き込む
-			err := redisClient.HSet(kvName, key, value).Err()
-			if err != nil {
-				return err
-			}
-		}
-	}
-
-	return nil
-}
-
-func (kvs *KVs) LoadKVsFromSheet() error {
-	// sheetServiceは使い回す
-	s, err := sheet.New()
-	if err != nil {
-		return err
-	}
+func LoadKVsFromSheet(s *sheet.Sheet, sheetID string) (*KVs, error) {
+	kvs := &KVs{}
 
 	kvsType := reflect.TypeOf(*kvs)
 	for i := 0; i < kvsType.NumField(); i++ {
 		// kvを作成
 		kvName := kvsType.Field(i).Tag.Get("kvName")
-		kv, err := getKVFromSheet(s, kvName)
+		kv, err := getKVFromSheet(s, kvName, sheetID)
 		if err != nil {
-			return err
+			return nil, err
 		}
 		// 生成したkvをkvsにセットする
 		reflect.ValueOf(kvs).Elem().Field(i).Set(reflect.ValueOf(*kv))
 	}
 
-	return err
+	return kvs, nil
 }
 
-func getKVFromSheet(s *sheet.Sheet, kvName string) (*map[string]string, error) {
+func getKVFromSheet(s *sheet.Sheet, kvName string, sheetID string) (*map[string]string, error) {
 	// シートからデータを取得
-	res, err := s.Get(constant.SheetID, kvName)
+	res, err := s.Get(sheetID, kvName)
 	if err != nil {
 		return &map[string]string{}, err
 	}
@@ -107,4 +63,22 @@ func getKVFromSheet(s *sheet.Sheet, kvName string) (*map[string]string, error) {
 	}
 
 	return &kv, err
+}
+
+// RoomID: ルームキーからルームIDを取得
+func (kvs *KVs) RoomID(key string) (string, error) {
+	id, ok := kvs.Rooms[key]
+	if !ok {
+		return "", fmt.Errorf("room key not found: %s", key)
+	}
+	return id, nil
+}
+
+// Nickname: ユーザーIDからニックネームを取得
+func (kvs *KVs) Nickname(userID string) (string, error) {
+	name, ok := kvs.Nicknames[userID]
+	if !ok {
+		return "", fmt.Errorf("nickname not found: %s", userID)
+	}
+	return name, nil
 }

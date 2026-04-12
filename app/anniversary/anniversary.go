@@ -9,6 +9,7 @@ import (
 
 	"github.com/commojun/nyanbot/app/linebot"
 	"github.com/commojun/nyanbot/app/time_util"
+	"github.com/commojun/nyanbot/masterdata"
 	"github.com/commojun/nyanbot/masterdata/table"
 )
 
@@ -21,22 +22,14 @@ var (
 	TEMPLATE = "今日は%sから%d%sだよ！"
 )
 
-func New() (*AnniversaryManager, error) {
-	annivs, err := table.Anniversaries()
-	if err != nil {
-		return &AnniversaryManager{}, err
-	}
-
-	bot, err := linebot.New()
-	if err != nil {
-		return &AnniversaryManager{}, err
-	}
+func New(bot *linebot.LineBot) *AnniversaryManager {
+	annivs := masterdata.GetTables().Anniversaries
 
 	am := AnniversaryManager{
 		Anniversaries: annivs,
 		Bot:           bot,
 	}
-	return &am, nil
+	return &am
 }
 
 func (am *AnniversaryManager) Run() error {

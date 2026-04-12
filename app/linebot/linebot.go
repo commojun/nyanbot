@@ -1,9 +1,8 @@
 package linebot
 
 import (
-	"github.com/commojun/nyanbot/app/redis"
-	"github.com/commojun/nyanbot/constant"
-	"github.com/commojun/nyanbot/masterdata/key_value"
+	"github.com/commojun/nyanbot/config"
+	"github.com/commojun/nyanbot/masterdata"
 	origin "github.com/line/line-bot-sdk-go/linebot"
 )
 
@@ -13,15 +12,15 @@ type LineBot struct {
 	Events        []*origin.Event
 }
 
-func New() (*LineBot, error) {
-	botClient, err := origin.New(constant.ChannelSecret, constant.ChannelAccessToken)
+func New(cfg config.Config) (*LineBot, error) {
+	botClient, err := origin.New(cfg.ChannelSecret, cfg.ChannelAccessToken)
 	if err != nil {
 		return &LineBot{}, err
 	}
 
 	var bot = &LineBot{
 		Client:        botClient,
-		DefaultRoomID: constant.DefaultRoomID,
+		DefaultRoomID: cfg.DefaultRoomID,
 	}
 
 	return bot, nil
@@ -40,17 +39,11 @@ func (bot *LineBot) TextMessage(msg string) error {
 }
 
 func (bot *LineBot) TextMessageWithRoomKey(msg string, roomKey string) error {
-	redisClient := redis.NewClient()
-	roomID, err := redisClient.HGet(key_value.Room, roomKey).Result()
+	roomID, err := masterdata.GetKeyVals().RoomID(roomKey)
 	if err != nil {
 		return err
 	}
-
-	err = bot.TextMessageWithRoomID(msg, roomID)
-	if err != nil {
-		return err
-	}
-	return nil
+	return bot.TextMessageWithRoomID(msg, roomID)
 }
 
 func (bot *LineBot) TextMessageWithRoomID(msg string, roomID string) error {

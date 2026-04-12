@@ -10,10 +10,7 @@ var (
 )
 
 func doRandomAnniversary(tma *TextMessageAction) error {
-	am, err := anniversary.New()
-	if err != nil {
-		return err
-	}
+	am := anniversary.New(tma.Bot)
 
 	msg, err := am.RandomMsg()
 	if err != nil {

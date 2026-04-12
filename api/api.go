@@ -8,6 +8,8 @@ import (
 	"net/http"
 	"strconv"
 	"strings"
+
+	"github.com/commojun/nyanbot/config"
 )
 
 type API struct {
@@ -22,11 +24,11 @@ type Response struct {
 	Writer  *http.ResponseWriter
 }
 
-func New() ([]API, error) {
+func New(cfg config.Config) ([]API, error) {
 	return []API{
 		test,
-		message,
-		lineHook,
+		makeMessageAPI(cfg),
+		makeLineHookAPI(cfg),
 	}, nil
 }
 

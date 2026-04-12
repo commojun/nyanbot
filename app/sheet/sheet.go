@@ -1,33 +1,36 @@
 package sheet
 
 import (
-	"fmt"
-	"log"
-
-	"github.com/commojun/nyanbot/constant"
 	"golang.org/x/oauth2"
 	"golang.org/x/oauth2/google"
 	"golang.org/x/oauth2/jwt"
 	"google.golang.org/api/sheets/v4"
 )
 
+type Config struct {
+	Email        string
+	PrivateKey   string
+	PrivateKeyID string
+	TokenURL     string
+}
+
 type Sheet struct {
 	Service *sheets.Service
 }
 
-func New() (*Sheet, error) {
-	cfg := &jwt.Config{
-		Email:        constant.GoogleClientEmail,
-		PrivateKey:   []byte(constant.GooglePrivateKey),
-		PrivateKeyID: constant.GooglePrivateKeyID,
+func New(cfg Config) (*Sheet, error) {
+	jwtCfg := &jwt.Config{
+		Email:        cfg.Email,
+		PrivateKey:   []byte(cfg.PrivateKey),
+		PrivateKeyID: cfg.PrivateKeyID,
 		Scopes:       []string{"https://www.googleapis.com/auth/spreadsheets"},
-		TokenURL:     constant.GoogleTokenURL,
+		TokenURL:     cfg.TokenURL,
 	}
-	if cfg.TokenURL == "" {
-		cfg.TokenURL = google.JWTTokenURL
+	if jwtCfg.TokenURL == "" {
+		jwtCfg.TokenURL = google.JWTTokenURL
 	}
 
-	sheetService, err := sheets.New(cfg.Client(oauth2.NoContext))
+	sheetService, err := sheets.New(jwtCfg.Client(oauth2.NoContext))
 	if err != nil {
 		return &Sheet{}, err
 	}
@@ -44,17 +47,4 @@ func (sheet *Sheet) Get(spreadsheetID string, sheetName string) (*sheets.ValueRa
 	}
 
 	return res, err
-}
-
-func (sheet *Sheet) Load() error {
-	spreadsheetId := constant.SheetID
-
-	_, err := sheet.Service.Spreadsheets.Get(spreadsheetId).Do()
-	if err != nil {
-		log.Fatalf("Unable to get Spreadsheets. %v", err)
-	}
-
-	fmt.Printf("success!\n")
-
-	return err
 }

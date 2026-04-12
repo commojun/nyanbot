@@ -26,7 +26,6 @@ pods:
 init:
 	kubectl apply \
 	-f ./kube/namespace.yml \
-	-f ./kube/redis.yml \
 	-f ./kube/server.yml \
 	-f ./kube/anniversary.yml
 
@@ -41,16 +40,9 @@ secret:
 		--save-config nyan-secret \
 		--from-env-file ./envfile
 
-redis-cli:
-	kubectl exec -it redis -- redis-cli
-
 hello:
 	-kubectl delete -f kube/hello.yml
 	kubectl apply -f kube/hello.yml
-
-export:
-	-kubectl delete -f kube/export.yml
-	kubectl apply -f kube/export.yml
 
 logs/%:
 	kubectl logs --timestamps=true --prefix=true -f -l app=$*
@@ -61,3 +53,16 @@ logs-all:
 shell/%:
 	kubectl exec -it $* -- bash
 
+restart/server:
+	kubectl rollout restart deployment/server-deployment
+
+# CronJobs do not need to be restarted. The next run will use the updated data.
+# To run immediately, use 'kubectl create job --from=cronjob/<name> <job-name>'
+restart/alarm:
+	@echo "Alarm is a CronJob, no restart needed."
+
+restart/anniversary:
+	@echo "Anniversary is a CronJob, no restart needed."
+
+restart/all:
+	make restart/server

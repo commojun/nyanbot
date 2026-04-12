@@ -1,132 +1,97 @@
 package main
 
 import (
-	"flag"
-	"fmt"
 	"log"
-	"os"
-	"time"
 
-	"github.com/Songmu/retry"
-	"github.com/commojun/nyanbot"
+	"github.com/alecthomas/kong"
 	"github.com/commojun/nyanbot/app/alarm"
 	"github.com/commojun/nyanbot/app/anniversary"
 	"github.com/commojun/nyanbot/app/hello"
-	"github.com/commojun/nyanbot/app/redis"
-	"github.com/commojun/nyanbot/masterdata/key_value"
-	"github.com/commojun/nyanbot/masterdata/table"
+	"github.com/commojun/nyanbot/app/linebot"
+	"github.com/commojun/nyanbot/app/server"
+	"github.com/commojun/nyanbot/config"
+	"github.com/commojun/nyanbot/masterdata"
 )
 
+type CLI struct {
+	config.Config `embed:""`
+
+	Server      ServerCmd      `cmd:"" help:"Start HTTP server"`
+	Hello       HelloCmd       `cmd:"" help:"Send hello message"`
+	Alarm       AlarmCmd       `cmd:"" help:"Run alarm checker"`
+	Anniversary AnniversaryCmd `cmd:"" help:"Run anniversary checker"`
+}
+
+// ServerCmd: HTTP サーバーを起動
+type ServerCmd struct{}
+
+func (cmd *ServerCmd) Run(ctx *CLI) error {
+	if err := masterdata.Initialize(ctx.Config); err != nil {
+		log.Fatal(err)
+	}
+
+	srv, err := server.New(ctx.Config)
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	return srv.Start()
+}
+
+// HelloCmd: テスト用 hello メッセージを送信
+type HelloCmd struct{}
+
+func (cmd *HelloCmd) Run(ctx *CLI) error {
+	if err := masterdata.Initialize(ctx.Config); err != nil {
+		log.Fatal(err)
+	}
+
+	bot, err := linebot.New(ctx.Config)
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	h := hello.New(bot)
+	return h.Say()
+}
+
+// AlarmCmd: アラームチェッカーを実行
+type AlarmCmd struct{}
+
+func (cmd *AlarmCmd) Run(ctx *CLI) error {
+	if err := masterdata.Initialize(ctx.Config); err != nil {
+		log.Fatal(err)
+	}
+
+	bot, err := linebot.New(ctx.Config)
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	alm := alarm.New(bot)
+	return alm.Run()
+}
+
+// AnniversaryCmd: 記念日チェッカーを実行
+type AnniversaryCmd struct{}
+
+func (cmd *AnniversaryCmd) Run(ctx *CLI) error {
+	if err := masterdata.Initialize(ctx.Config); err != nil {
+		log.Fatal(err)
+	}
+
+	bot, err := linebot.New(ctx.Config)
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	anniv := anniversary.New(bot)
+	return anniv.Run()
+}
+
 func main() {
-	flag.Usage = flagUsage
-
-	if len(os.Args) == 1 {
-		flag.Usage()
-		return
-	}
-
-	switch os.Args[1] {
-	case "server":
-		Server()
-	case "hello":
-		Hello()
-	case "export":
-		Export()
-	case "alarm":
-		Alarm()
-	case "anniversary":
-		Anniversary()
-	default:
-		flagUsage()
-	}
-}
-
-func flagUsage() {
-	usageText := `nyanbot
-
-Usage:
-nyan command [args]
-
-server
-hello
-export
-alarm
-anniversary`
-
-	fmt.Fprintf(os.Stderr, "%s\n\n", usageText)
-}
-
-func Server() {
-	server, err := nyanbot.NewServer()
-	if err != nil {
-		log.Fatal(err)
-	}
-
-	err = server.Start()
-	if err != nil {
-		log.Fatal(err)
-	}
-}
-
-func Hello() {
-	hello, err := hello.New()
-	if err != nil {
-		log.Fatal(err)
-	}
-
-	err = hello.Say()
-	if err != nil {
-		log.Fatal(err)
-	}
-}
-
-func Export() {
-	// Redisに接続できるか
-	rc := redis.NewClient()
-	err := retry.Retry(10, 10*time.Second, func() error {
-		log.Println("attempt to connect to redis")
-		err := rc.Keys("*").Err()
-		return err
-	})
-	if err != nil {
-		log.Println("failed to connect to redis")
-		log.Fatal(err)
-	}
-	log.Println("redis connection ok")
-
-	log.Println("Table initialize")
-	_, err = table.Initialize()
-	if err != nil {
-		log.Fatal(err)
-	}
-	log.Println("KeyValue initialize")
-	_, err = key_value.Initialize()
-	if err != nil {
-		log.Fatal(err)
-	}
-	log.Println("Initialize done.")
-}
-
-func Alarm() {
-	alm, err := alarm.New()
-	if err != nil {
-		log.Fatal(err)
-	}
-
-	err = alm.Run()
-	if err != nil {
-		log.Fatal(err)
-	}
-}
-
-func Anniversary() {
-	anniv, err := anniversary.New()
-	if err != nil {
-		log.Fatal(err)
-	}
-
-	err = anniv.Run()
-	if err != nil {
-		log.Fatal(err)
-	}
+	var cli CLI
+	ctx := kong.Parse(&cli)
+	err := ctx.Run(&cli)
+	ctx.FatalIfErrorf(err)
 }
