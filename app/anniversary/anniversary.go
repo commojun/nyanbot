@@ -22,19 +22,14 @@ var (
 	TEMPLATE = "今日は%sから%d%sだよ！"
 )
 
-func New() (*AnniversaryManager, error) {
+func New(bot *linebot.LineBot) *AnniversaryManager {
 	annivs := cache.GetAnniversaries()
-
-	bot, err := linebot.New()
-	if err != nil {
-		return &AnniversaryManager{}, err
-	}
 
 	am := AnniversaryManager{
 		Anniversaries: annivs,
 		Bot:           bot,
 	}
-	return &am, nil
+	return &am
 }
 
 func (am *AnniversaryManager) Run() error {

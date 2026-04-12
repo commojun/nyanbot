@@ -4,7 +4,6 @@ import (
 	"reflect"
 
 	"github.com/commojun/nyanbot/app/sheet"
-	"github.com/commojun/nyanbot/constant"
 )
 
 var (
@@ -19,19 +18,14 @@ type KVs struct {
 	Tests    map[string]string `kvName:"testkv"`
 }
 
-func LoadKVsFromSheet() (*KVs, error) {
+func LoadKVsFromSheet(s *sheet.Sheet, sheetID string) (*KVs, error) {
 	kvs := &KVs{}
-	// sheetServiceは使い回す
-	s, err := sheet.New()
-	if err != nil {
-		return nil, err
-	}
 
 	kvsType := reflect.TypeOf(*kvs)
 	for i := 0; i < kvsType.NumField(); i++ {
 		// kvを作成
 		kvName := kvsType.Field(i).Tag.Get("kvName")
-		kv, err := getKVFromSheet(s, kvName)
+		kv, err := getKVFromSheet(s, kvName, sheetID)
 		if err != nil {
 			return nil, err
 		}
@@ -42,9 +36,9 @@ func LoadKVsFromSheet() (*KVs, error) {
 	return kvs, nil
 }
 
-func getKVFromSheet(s *sheet.Sheet, kvName string) (*map[string]string, error) {
+func getKVFromSheet(s *sheet.Sheet, kvName string, sheetID string) (*map[string]string, error) {
 	// シートからデータを取得
-	res, err := s.Get(constant.SheetID, kvName)
+	res, err := s.Get(sheetID, kvName)
 	if err != nil {
 		return &map[string]string{}, err
 	}

@@ -7,7 +7,7 @@ import (
 	"net/http"
 
 	"github.com/commojun/nyanbot/api"
-	"github.com/commojun/nyanbot/constant"
+	"github.com/commojun/nyanbot/config"
 )
 
 type Server struct {
@@ -15,21 +15,12 @@ type Server struct {
 	Port int
 }
 
-func New() (*Server, error) {
-	port, err := strconv.Atoi(constant.ServerPort)
-	if err != nil {
-		if constant.ServerPort == "" {
-			port = constant.DefaultServerPort
-		} else {
-			return nil, err
-		}
-	}
-
-	apis, err := api.New()
+func New(cfg config.Config) (*Server, error) {
+	apis, err := api.New(cfg)
 	return &Server{
 		APIs: apis,
-		Port: port,
-	}, nil
+		Port: cfg.ServerPort,
+	}, err
 }
 
 func (server *Server) Start() error {

@@ -13,13 +13,8 @@ type Echo struct {
 	Bot *linebot.LineBot
 }
 
-func New() (*Echo, error) {
-	bot, err := linebot.New()
-	if err != nil {
-		return &Echo{}, err
-	}
-
-	return &Echo{Bot: bot}, nil
+func New(bot *linebot.LineBot) *Echo {
+	return &Echo{Bot: bot}
 }
 
 func (echo *Echo) StartServer() error {

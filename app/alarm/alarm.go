@@ -15,19 +15,14 @@ type AlarmManager struct {
 	Bot    *linebot.LineBot
 }
 
-func New() (*AlarmManager, error) {
+func New(bot *linebot.LineBot) *AlarmManager {
 	alms := cache.GetAlarms()
-
-	bot, err := linebot.New()
-	if err != nil {
-		return &AlarmManager{}, err
-	}
 
 	am := AlarmManager{
 		Alarms: alms,
 		Bot:    bot,
 	}
-	return &am, nil
+	return &am
 }
 
 func (am *AlarmManager) Run() error {

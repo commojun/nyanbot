@@ -4,10 +4,10 @@ go 1.12
 
 require (
 	github.com/Songmu/retry v0.1.0
+	github.com/alecthomas/kong v1.15.0
 	github.com/google/go-cmp v0.5.1 // indirect
 	github.com/greymd/ojichat v0.2.1-0.20200220224333-1041dbc4f872
 	github.com/ikawaha/kagome.ipadic v1.1.2 // indirect
-	github.com/joho/godotenv v1.5.1 // indirect
 	github.com/line/line-bot-sdk-go v1.2.1
 	github.com/miiton/kanaconv v1.1.1 // indirect
 	github.com/niemeyer/pretty v0.0.0-20200227124842-a10e7caefd8e // indirect

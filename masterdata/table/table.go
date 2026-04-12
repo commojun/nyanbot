@@ -4,7 +4,6 @@ import (
 	"reflect"
 
 	"github.com/commojun/nyanbot/app/sheet"
-	"github.com/commojun/nyanbot/constant"
 )
 
 type Tables struct {
@@ -12,20 +11,15 @@ type Tables struct {
 	Anniversaries []Anniversary `tableName:"anniversary"`
 }
 
-func LoadTablesFromSheet() (*Tables, error) {
+func LoadTablesFromSheet(s *sheet.Sheet, sheetID string) (*Tables, error) {
 	ts := &Tables{}
-	// sheetServiceは使い回す
-	s, err := sheet.New()
-	if err != nil {
-		return nil, err
-	}
 
 	tsType := reflect.TypeOf(*ts)
 	for i := 0; i < tsType.NumField(); i++ {
 		// tableを生成
 		tName := tsType.Field(i).Tag.Get("tableName")
 		tType := tsType.Field(i).Type
-		tValue, err := getTableFromSheet(s, tType, tName)
+		tValue, err := getTableFromSheet(s, tType, tName, sheetID)
 		if err != nil {
 			return nil, err
 		}
@@ -36,9 +30,9 @@ func LoadTablesFromSheet() (*Tables, error) {
 	return ts, nil
 }
 
-func getTableFromSheet(s *sheet.Sheet, tType reflect.Type, tName string) (reflect.Value, error) {
+func getTableFromSheet(s *sheet.Sheet, tType reflect.Type, tName string, sheetID string) (reflect.Value, error) {
 	// シートからデータを取得
-	res, err := s.Get(constant.SheetID, tName)
+	res, err := s.Get(sheetID, tName)
 	if err != nil {
 		return reflect.Value{}, err
 	}

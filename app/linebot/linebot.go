@@ -2,7 +2,7 @@ package linebot
 
 import (
 	"github.com/commojun/nyanbot/cache"
-	"github.com/commojun/nyanbot/constant"
+	"github.com/commojun/nyanbot/config"
 	origin "github.com/line/line-bot-sdk-go/linebot"
 )
 
@@ -12,15 +12,15 @@ type LineBot struct {
 	Events        []*origin.Event
 }
 
-func New() (*LineBot, error) {
-	botClient, err := origin.New(constant.ChannelSecret, constant.ChannelAccessToken)
+func New(cfg config.Config) (*LineBot, error) {
+	botClient, err := origin.New(cfg.ChannelSecret, cfg.ChannelAccessToken)
 	if err != nil {
 		return &LineBot{}, err
 	}
 
 	var bot = &LineBot{
 		Client:        botClient,
-		DefaultRoomID: constant.DefaultRoomID,
+		DefaultRoomID: cfg.DefaultRoomID,
 	}
 
 	return bot, nil
