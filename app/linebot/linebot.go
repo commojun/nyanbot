@@ -1,8 +1,8 @@
 package linebot
 
 import (
-	"github.com/commojun/nyanbot/cache"
 	"github.com/commojun/nyanbot/config"
+	"github.com/commojun/nyanbot/masterdata"
 	origin "github.com/line/line-bot-sdk-go/linebot"
 )
 
@@ -39,7 +39,7 @@ func (bot *LineBot) TextMessage(msg string) error {
 }
 
 func (bot *LineBot) TextMessageWithRoomKey(msg string, roomKey string) error {
-	roomID, err := cache.GetRoomID(roomKey)
+	roomID, err := masterdata.GetKeyVals().RoomID(roomKey)
 	if err != nil {
 		return err
 	}

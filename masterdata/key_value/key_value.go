@@ -1,6 +1,7 @@
 package key_value
 
 import (
+	"fmt"
 	"reflect"
 
 	"github.com/commojun/nyanbot/app/sheet"
@@ -14,7 +15,7 @@ var (
 
 type KVs struct {
 	Rooms    map[string]string `kvName:"room"`
-	Nickname map[string]string `kvName:"nickname"`
+	Nicknames map[string]string `kvName:"nickname"`
 	Tests    map[string]string `kvName:"testkv"`
 }
 
@@ -62,4 +63,22 @@ func getKVFromSheet(s *sheet.Sheet, kvName string, sheetID string) (*map[string]
 	}
 
 	return &kv, err
+}
+
+// RoomID: ルームキーからルームIDを取得
+func (kvs *KVs) RoomID(key string) (string, error) {
+	id, ok := kvs.Rooms[key]
+	if !ok {
+		return "", fmt.Errorf("room key not found: %s", key)
+	}
+	return id, nil
+}
+
+// Nickname: ユーザーIDからニックネームを取得
+func (kvs *KVs) Nickname(userID string) (string, error) {
+	name, ok := kvs.Nicknames[userID]
+	if !ok {
+		return "", fmt.Errorf("nickname not found: %s", userID)
+	}
+	return name, nil
 }

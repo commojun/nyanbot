@@ -9,7 +9,7 @@ import (
 
 	"github.com/commojun/nyanbot/app/linebot"
 	"github.com/commojun/nyanbot/app/time_util"
-	"github.com/commojun/nyanbot/cache"
+	"github.com/commojun/nyanbot/masterdata"
 	"github.com/commojun/nyanbot/masterdata/table"
 )
 
@@ -23,7 +23,7 @@ var (
 )
 
 func New(bot *linebot.LineBot) *AnniversaryManager {
-	annivs := cache.GetAnniversaries()
+	annivs := masterdata.GetTables().Anniversaries
 
 	am := AnniversaryManager{
 		Anniversaries: annivs,

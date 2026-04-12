@@ -5,7 +5,7 @@ import (
 	"time"
 
 	"github.com/commojun/nyanbot/app/ojisan"
-	"github.com/commojun/nyanbot/cache"
+	"github.com/commojun/nyanbot/masterdata"
 )
 
 var (
@@ -17,7 +17,7 @@ var (
 
 func doOjisan(tma *TextMessageAction) error {
 	// 名前取得
-	nickname, err := cache.GetNickname(tma.Event.Source.UserID)
+	nickname, err := masterdata.GetKeyVals().Nickname(tma.Event.Source.UserID)
 	if err != nil {
 		nickname = "にゃんこ"
 	}

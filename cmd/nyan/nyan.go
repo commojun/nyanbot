@@ -9,8 +9,8 @@ import (
 	"github.com/commojun/nyanbot/app/hello"
 	"github.com/commojun/nyanbot/app/linebot"
 	"github.com/commojun/nyanbot/app/server"
-	"github.com/commojun/nyanbot/cache"
 	"github.com/commojun/nyanbot/config"
+	"github.com/commojun/nyanbot/masterdata"
 )
 
 type CLI struct {
@@ -26,7 +26,7 @@ type CLI struct {
 type ServerCmd struct{}
 
 func (cmd *ServerCmd) Run(ctx *CLI) error {
-	if err := cache.Initialize(ctx.Config); err != nil {
+	if err := masterdata.Initialize(ctx.Config); err != nil {
 		log.Fatal(err)
 	}
 
@@ -42,7 +42,7 @@ func (cmd *ServerCmd) Run(ctx *CLI) error {
 type HelloCmd struct{}
 
 func (cmd *HelloCmd) Run(ctx *CLI) error {
-	if err := cache.Initialize(ctx.Config); err != nil {
+	if err := masterdata.Initialize(ctx.Config); err != nil {
 		log.Fatal(err)
 	}
 
@@ -59,7 +59,7 @@ func (cmd *HelloCmd) Run(ctx *CLI) error {
 type AlarmCmd struct{}
 
 func (cmd *AlarmCmd) Run(ctx *CLI) error {
-	if err := cache.Initialize(ctx.Config); err != nil {
+	if err := masterdata.Initialize(ctx.Config); err != nil {
 		log.Fatal(err)
 	}
 
@@ -76,7 +76,7 @@ func (cmd *AlarmCmd) Run(ctx *CLI) error {
 type AnniversaryCmd struct{}
 
 func (cmd *AnniversaryCmd) Run(ctx *CLI) error {
-	if err := cache.Initialize(ctx.Config); err != nil {
+	if err := masterdata.Initialize(ctx.Config); err != nil {
 		log.Fatal(err)
 	}
 
