@@ -1,0 +1,98 @@
+version: '3'
+
+vars:
+  VERSION: '0.0.11'
+
+tasks:
+  testall:
+    desc: 全Goテストを実行
+    cmds:
+      - go test ./...
+
+  release:
+    desc: 新しいリリースタグを作成してプッシュ (VERSION=x.x.x)
+    cmds:
+      - git tag -a v{{.VERSION}} -m "new tag by make"
+      - git push origin tag v{{.VERSION}}
+
+  dockerbuild:
+    desc: マルチアーキテクチャDockerイメージをビルドしてプッシュ (VERSION=x.x.x)
+    dir: docker
+    cmds:
+      - |
+        docker buildx build \
+          -t commojun/nyanb:{{.VERSION}} \
+          --platform linux/amd64,linux/arm/v7,linux/arm/v6 \
+          --build-arg VERSION={{.VERSION}} \
+          --push \
+          -f ./Dockerfile .
+
+  get-all:
+    desc: Kubernetesの全リソースを表示
+    cmds:
+      - kubectl get all
+
+  pods:
+    desc: Pod一覧をwatchモードで表示
+    cmds:
+      - kubectl get pods -o wide --watch
+
+  init:
+    desc: Kubernetesリソースを初期化
+    cmds:
+      - kubectl apply -f ./kube/namespace.yml -f ./kube/server.yml -f ./kube/anniversary.yml
+
+  deploy:
+    desc: サーバーをデプロイ
+    cmds:
+      - kubectl apply -f ./kube/server.yml -l deploy
+
+  secret:
+    desc: envfileからKubernetesシークレットを作成
+    cmds:
+      - cmd: kubectl delete secret nyan-secret
+        ignore_error: true
+      - kubectl create secret generic --save-config nyan-secret --from-env-file ./envfile
+
+  hello:
+    desc: テスト用helloジョブを実行
+    cmds:
+      - cmd: kubectl delete -f kube/hello.yml
+        ignore_error: true
+      - kubectl apply -f kube/hello.yml
+
+  logs:
+    desc: アプリのログを表示 (APP=<app-name>)
+    cmds:
+      - kubectl logs --timestamps=true --prefix=true -f -l app={{.APP}}
+
+  logs-all:
+    desc: 全アプリのログを表示
+    cmds:
+      - kubectl logs --timestamps=true --prefix=true -f -l app
+
+  shell:
+    desc: PodのBashシェルにアクセス (POD=<pod-name>)
+    cmds:
+      - kubectl exec -it {{.POD}} -- bash
+
+  restart:server:
+    desc: Server Deploymentを再起動
+    cmds:
+      - kubectl rollout restart deployment/server-deployment
+
+  # CronJobsは再起動不要。次回実行時に最新データが使われる。
+  # 即時実行する場合は 'kubectl create job --from=cronjob/<name> <job-name>' を使う
+  restart:alarm:
+    desc: AlarmはCronJobなので再起動は不要
+    cmds:
+      - echo "Alarm is a CronJob, no restart needed."
+
+  restart:anniversary:
+    desc: AnniversaryはCronJobなので再起動は不要
+    cmds:
+      - echo "Anniversary is a CronJob, no restart needed."
+
+  restart:all:
+    desc: 全サービスを再起動
+    deps: [restart:server]
