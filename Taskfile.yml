@@ -1,0 +1,94 @@
+version: '3'
+
+vars:
+  VERSION: '0.1.4'
+
+tasks:
+  default:
+    desc: 利用可能なタスク一覧を表示
+    cmds:
+      - task --list
+
+  testall:
+    desc: 全Goテストを実行
+    cmds:
+      - go test ./...
+
+  release:
+    desc: 新しいリリースタグを作成してプッシュ (VERSION=x.x.x)
+    cmds:
+      - git tag -a v{{.VERSION}} -m "new tag by make"
+      - git push origin tag v{{.VERSION}}
+
+  build:
+    desc: マルチアーキテクチャDockerイメージをビルドしてプッシュ (VERSION=x.x.x)
+    dir: docker
+    cmds:
+      - |
+        docker buildx build \
+          -t commojun/nyanb:{{.VERSION}} \
+          --platform linux/amd64,linux/arm/v7,linux/arm/v6 \
+          --build-arg VERSION={{.VERSION}} \
+          --push \
+          -f ./Dockerfile .
+
+  get-all:
+    desc: Kubernetesの全リソースを表示
+    cmds:
+      - kubectl get all
+
+  pods:
+    desc: Pod一覧をwatchモードで表示
+    cmds:
+      - kubectl get pods -o wide --watch
+
+  init:
+    desc: Kubernetesリソースを初期化
+    cmds:
+      - kubectl apply -f ./kube/namespace.yml
+      - kubectl apply -k ./kube/
+
+  deploy:
+    desc: kustomizeで全リソースをデプロイ
+    cmds:
+      - kubectl apply -k ./kube/
+
+  set-version:
+    desc: kustomizeのイメージタグをTaskfileのVERSIONに合わせる
+    dir: kube
+    cmds:
+      - kustomize edit set image commojun/nyanbot:{{.VERSION}}
+
+  secret:
+    desc: envfileからKubernetesシークレットを作成
+    cmds:
+      - cmd: kubectl delete secret nyan-secret
+        ignore_error: true
+      - kubectl create secret generic --save-config nyan-secret --from-env-file ./envfile
+
+  hello:
+    desc: テスト用helloジョブを実行
+    cmds:
+      - cmd: kubectl delete -f kube/hello.yml
+        ignore_error: true
+      - kubectl apply -f kube/hello.yml
+
+  logs:*:
+    desc: アプリのログを表示 (task logs:<app-name>)
+    cmds:
+      - kubectl logs --timestamps=true --prefix=true -f -l app={{index .MATCH 0}}
+
+  logs-all:
+    desc: 全アプリのログを表示
+    cmds:
+      - kubectl logs --timestamps=true --prefix=true -f -l app
+
+  shell:*:
+    desc: PodのBashシェルにアクセス (task shell:<pod-name>)
+    cmds:
+      - kubectl exec -it {{index .MATCH 0}} -- bash
+
+  restart:
+    desc: Server Deploymentを再起動
+    cmds:
+      - kubectl rollout restart deployment/server-deployment
