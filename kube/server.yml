@@ -33,7 +33,7 @@ spec:
     spec:
       containers:
       - name: server
-        image: commojun/nyanbot:0.1.3
+        image: commojun/nyanbot:0.1.4
         ports:
         - containerPort: 30001
         command: ["nyan", "server"]
