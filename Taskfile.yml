@@ -1,7 +1,7 @@
 version: '3'
 
 vars:
-  VERSION: '0.0.11'
+  VERSION: '0.1.4'
 
 tasks:
   testall:
@@ -80,18 +80,6 @@ tasks:
     desc: Server Deploymentを再起動
     cmds:
       - kubectl rollout restart deployment/server-deployment
-
-  # CronJobsは再起動不要。次回実行時に最新データが使われる。
-  # 即時実行する場合は 'kubectl create job --from=cronjob/<name> <job-name>' を使う
-  restart:alarm:
-    desc: AlarmはCronJobなので再起動は不要
-    cmds:
-      - echo "Alarm is a CronJob, no restart needed."
-
-  restart:anniversary:
-    desc: AnniversaryはCronJobなので再起動は不要
-    cmds:
-      - echo "Anniversary is a CronJob, no restart needed."
 
   restart:all:
     desc: 全サービスを再起動
