@@ -4,6 +4,11 @@ vars:
   VERSION: '0.1.4'
 
 tasks:
+  default:
+    desc: 利用可能なタスク一覧を表示
+    cmds:
+      - task --list
+
   testall:
     desc: 全Goテストを実行
     cmds:
@@ -15,7 +20,7 @@ tasks:
       - git tag -a v{{.VERSION}} -m "new tag by make"
       - git push origin tag v{{.VERSION}}
 
-  dockerbuild:
+  build:
     desc: マルチアーキテクチャDockerイメージをビルドしてプッシュ (VERSION=x.x.x)
     dir: docker
     cmds:
@@ -40,12 +45,19 @@ tasks:
   init:
     desc: Kubernetesリソースを初期化
     cmds:
-      - kubectl apply -f ./kube/namespace.yml -f ./kube/server.yml -f ./kube/anniversary.yml
+      - kubectl apply -f ./kube/namespace.yml
+      - kubectl apply -k ./kube/
 
   deploy:
-    desc: サーバーをデプロイ
+    desc: kustomizeで全リソースをデプロイ
     cmds:
-      - kubectl apply -f ./kube/server.yml -l deploy
+      - kubectl apply -k ./kube/
+
+  set-version:
+    desc: kustomizeのイメージタグをTaskfileのVERSIONに合わせる
+    dir: kube
+    cmds:
+      - kustomize edit set image commojun/nyanbot:{{.VERSION}}
 
   secret:
     desc: envfileからKubernetesシークレットを作成
@@ -61,26 +73,22 @@ tasks:
         ignore_error: true
       - kubectl apply -f kube/hello.yml
 
-  logs:
-    desc: アプリのログを表示 (APP=<app-name>)
+  logs:*:
+    desc: アプリのログを表示 (task logs:<app-name>)
     cmds:
-      - kubectl logs --timestamps=true --prefix=true -f -l app={{.APP}}
+      - kubectl logs --timestamps=true --prefix=true -f -l app={{index .MATCH 0}}
 
   logs-all:
     desc: 全アプリのログを表示
     cmds:
       - kubectl logs --timestamps=true --prefix=true -f -l app
 
-  shell:
-    desc: PodのBashシェルにアクセス (POD=<pod-name>)
+  shell:*:
+    desc: PodのBashシェルにアクセス (task shell:<pod-name>)
     cmds:
-      - kubectl exec -it {{.POD}} -- bash
+      - kubectl exec -it {{index .MATCH 0}} -- bash
 
-  restart:server:
+  restart:
     desc: Server Deploymentを再起動
     cmds:
       - kubectl rollout restart deployment/server-deployment
-
-  restart:all:
-    desc: 全サービスを再起動
-    deps: [restart:server]

@@ -15,7 +15,7 @@ task testall
 go test ./...
 
 # マルチアーキテクチャ対応のDockerイメージをビルド
-task dockerbuild VERSION=x.x.x
+task build VERSION=x.x.x
 
 # 新しいリリースタグを作成
 task release VERSION=x.x.x
@@ -55,17 +55,14 @@ task deploy
 task secret
 
 # 特定のアプリのログを表示
-task logs APP=server
-task logs APP=alarm
+task logs:server
+task logs:alarm
 
 # Podにシェルでアクセス
-task shell POD=pod-name
+task shell:pod-name
 
 # サーバーを再起動
-task restart:server
-
-# 全サービスを再起動
-task restart:all
+task restart
 ```
 
 ## アーキテクチャ

@@ -13,7 +13,7 @@ spec:
     spec:
       containers:
       - name: hello
-        image: commojun/nyanbot:0.1.3
+        image: commojun/nyanbot
         envFrom:
         - secretRef:
             name: nyan-secret
