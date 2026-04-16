@@ -5,16 +5,16 @@ import (
 	"strings"
 
 	"github.com/commojun/nyanbot/app/linebot"
-	origin "github.com/line/line-bot-sdk-go/linebot"
+	"github.com/line/line-bot-sdk-go/v8/linebot/webhook"
 )
 
 type TextMessageAction struct {
 	Bot     *linebot.LineBot
-	Event   *origin.Event
-	Message *origin.TextMessage
+	Event   webhook.MessageEvent
+	Message webhook.TextMessageContent
 }
 
-func New(bot *linebot.LineBot, event *origin.Event, msg *origin.TextMessage) *TextMessageAction {
+func New(bot *linebot.LineBot, event webhook.MessageEvent, msg webhook.TextMessageContent) *TextMessageAction {
 	return &TextMessageAction{
 		Bot:     bot,
 		Event:   event,
