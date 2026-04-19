@@ -6,7 +6,7 @@ require (
 	github.com/Songmu/retry v0.1.0
 	github.com/alecthomas/kong v1.15.0
 	github.com/greymd/ojichat v0.2.1-0.20200220224333-1041dbc4f872
-	github.com/line/line-bot-sdk-go v1.2.1
+	github.com/line/line-bot-sdk-go/v8 v8.20.0
 	golang.org/x/oauth2 v0.36.0
 	google.golang.org/api v0.275.0
 )

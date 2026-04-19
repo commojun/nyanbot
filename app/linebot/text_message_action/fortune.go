@@ -15,14 +15,16 @@ var (
 )
 
 func doDrawFortune(tma *TextMessageAction) error {
+	userID := extractUserID(tma.Event.Source)
+
 	// 名前取得
-	nickname, err := masterdata.GetKeyVals().Nickname(tma.Event.Source.UserID)
+	nickname, err := masterdata.GetKeyVals().Nickname(userID)
 	if err != nil {
 		nickname = "あなた"
 	}
 
 	f := fortune.New()
-	result := f.DrawByStringSeed(tma.Event.Source.UserID)
+	result := f.DrawByStringSeed(userID)
 
 	msg := fmt.Sprintf("%sの今日の運勢\n>>>%s<<<", nickname, result)
 

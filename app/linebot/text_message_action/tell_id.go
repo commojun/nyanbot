@@ -2,6 +2,8 @@ package text_message_action
 
 import (
 	"fmt"
+
+	"github.com/line/line-bot-sdk-go/v8/linebot/webhook"
 )
 
 var (
@@ -13,19 +15,13 @@ var (
 
 func doTellID(tma *TextMessageAction) error {
 	replyText := ""
-	if tma.Event.Source.UserID != "" {
-		replyText += fmt.Sprintf("あなたのID: %s\n", tma.Event.Source.UserID)
-	}
-	if tma.Event.Source.RoomID != "" {
-		replyText += fmt.Sprintf("この部屋のID: %s\n", tma.Event.Source.RoomID)
-	}
-	if tma.Event.Source.GroupID != "" {
-		replyText += fmt.Sprintf("このグループのID: %s\n", tma.Event.Source.GroupID)
+	switch src := tma.Event.Source.(type) {
+	case webhook.UserSource:
+		replyText += fmt.Sprintf("あなたのID: %s\n", src.UserId)
+	case webhook.GroupSource:
+		replyText += fmt.Sprintf("あなたのID: %s\n", src.UserId)
+		replyText += fmt.Sprintf("このグループのID: %s\n", src.GroupId)
 	}
 	replyText += "だよ！"
-	err := tma.Bot.TextReply(replyText, tma.Event.ReplyToken)
-	if err != nil {
-		return err
-	}
-	return nil
+	return tma.Bot.TextReply(replyText, tma.Event.ReplyToken)
 }

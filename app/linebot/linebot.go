@@ -3,39 +3,30 @@ package linebot
 import (
 	"github.com/commojun/nyanbot/config"
 	"github.com/commojun/nyanbot/masterdata"
-	origin "github.com/line/line-bot-sdk-go/linebot"
+	"github.com/line/line-bot-sdk-go/v8/linebot/messaging_api"
 )
 
 type LineBot struct {
-	Client        *origin.Client
+	Client        *messaging_api.MessagingApiAPI
+	ChannelSecret string
 	DefaultRoomID string
-	Events        []*origin.Event
 }
 
 func New(cfg config.Config) (*LineBot, error) {
-	botClient, err := origin.New(cfg.ChannelSecret, cfg.ChannelAccessToken)
+	client, err := messaging_api.NewMessagingApiAPI(cfg.ChannelAccessToken)
 	if err != nil {
 		return &LineBot{}, err
 	}
 
-	var bot = &LineBot{
-		Client:        botClient,
+	return &LineBot{
+		Client:        client,
+		ChannelSecret: cfg.ChannelSecret,
 		DefaultRoomID: cfg.DefaultRoomID,
-	}
-
-	return bot, nil
-}
-
-func IsInvalidSignature(err error) bool {
-	return err == origin.ErrInvalidSignature
+	}, nil
 }
 
 func (bot *LineBot) TextMessage(msg string) error {
-	err := bot.TextMessageWithRoomID(msg, bot.DefaultRoomID)
-	if err != nil {
-		return err
-	}
-	return nil
+	return bot.TextMessageWithRoomID(msg, bot.DefaultRoomID)
 }
 
 func (bot *LineBot) TextMessageWithRoomKey(msg string, roomKey string) error {
@@ -47,21 +38,17 @@ func (bot *LineBot) TextMessageWithRoomKey(msg string, roomKey string) error {
 }
 
 func (bot *LineBot) TextMessageWithRoomID(msg string, roomID string) error {
-	textMsg := origin.NewTextMessage(msg)
-	_, err := bot.Client.PushMessage(roomID, textMsg).Do()
-	if err != nil {
-		return err
-	}
-
-	return nil
+	_, err := bot.Client.PushMessage(&messaging_api.PushMessageRequest{
+		To:       roomID,
+		Messages: []messaging_api.MessageInterface{messaging_api.TextMessage{Text: msg}},
+	}, "")
+	return err
 }
 
 func (bot *LineBot) TextReply(msg string, replyToken string) error {
-	textMsg := origin.NewTextMessage(msg)
-	_, err := bot.Client.ReplyMessage(replyToken, textMsg).Do()
-	if err != nil {
-		return err
-	}
-
-	return nil
+	_, err := bot.Client.ReplyMessage(&messaging_api.ReplyMessageRequest{
+		ReplyToken: replyToken,
+		Messages:   []messaging_api.MessageInterface{messaging_api.TextMessage{Text: msg}},
+	})
+	return err
 }
