@@ -1,6 +1,8 @@
 package hello
 
 import (
+	"context"
+
 	"github.com/commojun/nyanbot/app/linebot"
 )
 
@@ -12,9 +14,9 @@ func New(bot *linebot.LineBot) *Hello {
 	return &Hello{Bot: bot}
 }
 
-func (hello *Hello) Say() error {
+func (hello *Hello) Say(ctx context.Context) error {
 
-	err := hello.Bot.TextMessage("Hello!")
+	err := hello.Bot.TextMessage(ctx, "Hello!")
 	if err != nil {
 		return err
 	}

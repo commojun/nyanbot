@@ -1,6 +1,7 @@
 package anniversary
 
 import (
+	"context"
 	"fmt"
 	"log"
 	"math/rand"
@@ -32,7 +33,7 @@ func New(bot *linebot.LineBot) *AnniversaryManager {
 	return &am
 }
 
-func (am *AnniversaryManager) Run() error {
+func (am *AnniversaryManager) Run(ctx context.Context) error {
 	now := time_util.LocalTime()
 	for _, a := range am.Anniversaries {
 		msg, check, err := MakeCheckMessage(&a, now)
@@ -40,7 +41,7 @@ func (am *AnniversaryManager) Run() error {
 			return err
 		}
 		if check {
-			err := am.Bot.TextMessageWithRoomKey(msg, a.RoomKey)
+			err := am.Bot.TextMessageWithRoomKey(ctx, msg, a.RoomKey)
 			if err != nil {
 				return err
 			}

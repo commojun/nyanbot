@@ -1,6 +1,7 @@
 package main
 
 import (
+	"context"
 	"log"
 
 	"github.com/alecthomas/kong"
@@ -25,12 +26,13 @@ type CLI struct {
 // ServerCmd: HTTP サーバーを起動
 type ServerCmd struct{}
 
-func (cmd *ServerCmd) Run(ctx *CLI) error {
-	if err := masterdata.Initialize(ctx.Config); err != nil {
+func (cmd *ServerCmd) Run(cliCtx *CLI) error {
+	ctx := context.Background()
+	if err := masterdata.Initialize(ctx, cliCtx.Config); err != nil {
 		log.Fatal(err)
 	}
 
-	srv, err := server.New(ctx.Config)
+	srv, err := server.New(cliCtx.Config)
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -41,52 +43,55 @@ func (cmd *ServerCmd) Run(ctx *CLI) error {
 // HelloCmd: テスト用 hello メッセージを送信
 type HelloCmd struct{}
 
-func (cmd *HelloCmd) Run(ctx *CLI) error {
-	if err := masterdata.Initialize(ctx.Config); err != nil {
+func (cmd *HelloCmd) Run(cliCtx *CLI) error {
+	ctx := context.Background()
+	if err := masterdata.Initialize(ctx, cliCtx.Config); err != nil {
 		log.Fatal(err)
 	}
 
-	bot, err := linebot.New(ctx.Config)
+	bot, err := linebot.New(cliCtx.Config)
 	if err != nil {
 		log.Fatal(err)
 	}
 
 	h := hello.New(bot)
-	return h.Say()
+	return h.Say(ctx)
 }
 
 // AlarmCmd: アラームチェッカーを実行
 type AlarmCmd struct{}
 
-func (cmd *AlarmCmd) Run(ctx *CLI) error {
-	if err := masterdata.Initialize(ctx.Config); err != nil {
+func (cmd *AlarmCmd) Run(cliCtx *CLI) error {
+	ctx := context.Background()
+	if err := masterdata.Initialize(ctx, cliCtx.Config); err != nil {
 		log.Fatal(err)
 	}
 
-	bot, err := linebot.New(ctx.Config)
+	bot, err := linebot.New(cliCtx.Config)
 	if err != nil {
 		log.Fatal(err)
 	}
 
 	alm := alarm.New(bot)
-	return alm.Run()
+	return alm.Run(ctx)
 }
 
 // AnniversaryCmd: 記念日チェッカーを実行
 type AnniversaryCmd struct{}
 
-func (cmd *AnniversaryCmd) Run(ctx *CLI) error {
-	if err := masterdata.Initialize(ctx.Config); err != nil {
+func (cmd *AnniversaryCmd) Run(cliCtx *CLI) error {
+	ctx := context.Background()
+	if err := masterdata.Initialize(ctx, cliCtx.Config); err != nil {
 		log.Fatal(err)
 	}
 
-	bot, err := linebot.New(ctx.Config)
+	bot, err := linebot.New(cliCtx.Config)
 	if err != nil {
 		log.Fatal(err)
 	}
 
 	anniv := anniversary.New(bot)
-	return anniv.Run()
+	return anniv.Run(ctx)
 }
 
 func main() {

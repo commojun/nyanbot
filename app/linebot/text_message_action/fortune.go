@@ -28,5 +28,5 @@ func doDrawFortune(tma *TextMessageAction) error {
 
 	msg := fmt.Sprintf("%sの今日の運勢\n>>>%s<<<", nickname, result)
 
-	return tma.Bot.TextReply(msg, tma.Event.ReplyToken)
+	return tma.Bot.TextReply(tma.Ctx, msg, tma.Event.ReplyToken)
 }

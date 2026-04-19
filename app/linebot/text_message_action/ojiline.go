@@ -34,5 +34,5 @@ func doOjisan(tma *TextMessageAction) error {
 		return err
 	}
 
-	return tma.Bot.TextReply(msg, tma.Event.ReplyToken)
+	return tma.Bot.TextReply(tma.Ctx, msg, tma.Event.ReplyToken)
 }

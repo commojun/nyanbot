@@ -23,5 +23,5 @@ func doTellID(tma *TextMessageAction) error {
 		replyText += fmt.Sprintf("このグループのID: %s\n", src.GroupId)
 	}
 	replyText += "だよ！"
-	return tma.Bot.TextReply(replyText, tma.Event.ReplyToken)
+	return tma.Bot.TextReply(tma.Ctx, replyText, tma.Event.ReplyToken)
 }
