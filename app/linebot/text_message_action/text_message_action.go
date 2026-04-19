@@ -70,3 +70,15 @@ func echo(tma *TextMessageAction) error {
 	}
 	return nil
 }
+
+func extractUserID(src webhook.SourceInterface) string {
+	switch s := src.(type) {
+	case webhook.UserSource:
+		return s.UserId
+	case webhook.GroupSource:
+		return s.UserId
+	case webhook.RoomSource:
+		return s.UserId
+	}
+	return ""
+}
