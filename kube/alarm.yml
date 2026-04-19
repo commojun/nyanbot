@@ -1,24 +1,24 @@
-apiVersion: batch/v1
-kind: CronJob
-metadata:
-  name: alarm
-  namespace: nyan
-spec:
-  schedule: "*/1 * * * *"
-  successfulJobsHistoryLimit: 10
-  failedJobsHistoryLimit: 5
-  jobTemplate:
-    spec:
-      template:
-        metadata:
-          labels:
-            app: alarm
-        spec:
-          restartPolicy: Never
-          containers:
-          - name: alarm
-            image: commojun/nyanbot
-            command: ["nyan", "alarm"]
-            envFrom:
-            - secretRef:
-                name: nyan-secret
+#apiVersion: batch/v1
+#kind: CronJob
+#metadata:
+#  name: alarm
+#  namespace: nyan
+#spec:
+#  schedule: "*/1 * * * *"
+#  successfulJobsHistoryLimit: 10
+#  failedJobsHistoryLimit: 5
+#  jobTemplate:
+#    spec:
+#      template:
+#        metadata:
+#          labels:
+#            app: alarm
+#        spec:
+#          restartPolicy: Never
+#          containers:
+#          - name: alarm
+#            image: commojun/nyanbot
+#            command: ["nyan", "alarm"]
+#            envFrom:
+#            - secretRef:
+#                name: nyan-secret

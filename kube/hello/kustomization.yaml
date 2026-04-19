@@ -1,10 +1,8 @@
 apiVersion: kustomize.config.k8s.io/v1beta1
 kind: Kustomization
 
-#  - alarm.yml
 resources:
-- server.yml
-- anniversary.yml
+- hello.yml
 
 images:
 - name: commojun/nyanbot

@@ -55,9 +55,9 @@ tasks:
 
   set-version:
     desc: kustomizeのイメージタグをTaskfileのVERSIONに合わせる
-    dir: kube
     cmds:
-      - kustomize edit set image commojun/nyanbot:{{.VERSION}}
+      - cd kube && kustomize edit set image commojun/nyanbot:{{.VERSION}}
+      - cd kube/hello && kustomize edit set image commojun/nyanbot:{{.VERSION}}
 
   secret:
     desc: envfileからKubernetesシークレットを作成
@@ -69,9 +69,9 @@ tasks:
   hello:
     desc: テスト用helloジョブを実行
     cmds:
-      - cmd: kubectl delete -f kube/hello.yml
+      - cmd: kubectl delete -k kube/hello/
         ignore_error: true
-      - kubectl apply -f kube/hello.yml
+      - kubectl apply -k kube/hello/
 
   logs:*:
     desc: アプリのログを表示 (task logs:<app-name>)
