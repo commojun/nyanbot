@@ -40,6 +40,9 @@ func makeLineHookAPI(cfg config.Config) API {
 
 func actByLineEvents(ctx context.Context, bot *linebot.LineBot, events []webhook.EventInterface) {
 	for _, event := range events {
+		if ctx.Err() != nil {
+			return
+		}
 		switch e := event.(type) {
 		case webhook.MessageEvent:
 			switch msg := e.Message.(type) {

@@ -30,7 +30,7 @@ func Initialize(ctx context.Context, cfg config.Config) error {
 	}
 
 	var md *MasterData
-	err := retry.Retry(3, 2*time.Second, func() error {
+	err := retry.WithContext(ctx, 3, 2*time.Second, func() error {
 		log.Println("Attempting to load data from Google Sheets...")
 		m, err := loadFromSheet(ctx, cfg)
 		if err != nil {
@@ -42,7 +42,7 @@ func Initialize(ctx context.Context, cfg config.Config) error {
 	})
 
 	if err != nil {
-		return fmt.Errorf("failed to initialize masterdata after 3 retries: %w", err)
+		return fmt.Errorf("failed to initialize masterdata: %w", err)
 	}
 
 	global = md

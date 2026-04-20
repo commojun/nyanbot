@@ -29,6 +29,9 @@ func New(bot *linebot.LineBot) *AlarmManager {
 func (am *AlarmManager) Run(ctx context.Context) error {
 
 	for _, a := range am.Alarms {
+		if err := ctx.Err(); err != nil {
+			return err
+		}
 		chk, err := Check(&a, time_util.LocalTime(), constant.BaseMinuteDuration)
 		if err != nil {
 			log.Printf("[ID:%s] error: %s", a.ID, err)

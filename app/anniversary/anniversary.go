@@ -36,6 +36,9 @@ func New(bot *linebot.LineBot) *AnniversaryManager {
 func (am *AnniversaryManager) Run(ctx context.Context) error {
 	now := time_util.LocalTime()
 	for _, a := range am.Anniversaries {
+		if err := ctx.Err(); err != nil {
+			return err
+		}
 		msg, check, err := MakeCheckMessage(&a, now)
 		if err != nil {
 			return err

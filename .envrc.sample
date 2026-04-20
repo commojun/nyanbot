@@ -1,12 +1,7 @@
-export NYAN_SERVER_PORT=8999
-export NYAN_MESSAGE_TOKEN=token
-
-export NYAN_CHANNEL_SECRET=line_channel_secret
-export NYAN_ACCESS_TOKEN=line_access_token
-export NYAN_DEFAULT_ROOM_ID=default_room_id
-
-export NYAN_SHEET_ID=sheet_id
-export NYAN_GOOGLE_CLIENT_EMAIL=service_account_email
-export NYAN_GOOGLE_PRIVATE_KEY=private_key
-export NYAN_GOOGLE_PRIVATE_KEY_ID=private_key_id
-export NYAN_GOOGLE_TOKEN_URL=https://oauth2.googleapis.com/token
+while IFS= read -r line; do
+  [ -z "$line" ] && continue
+  [[ "$line" =~ ^[[:space:]]*# ]] && continue
+  key="${line%%=*}"
+  value="${line#*=}"
+  export "$key"="$value"
+done < envfile
