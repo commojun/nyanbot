@@ -1,10 +1,12 @@
 package server
 
 import (
+	"context"
 	"log"
-	"strconv"
-
+	"net"
 	"net/http"
+	"strconv"
+	"time"
 
 	"github.com/commojun/nyanbot/api"
 	"github.com/commojun/nyanbot/config"
@@ -23,18 +25,42 @@ func New(cfg config.Config) (*Server, error) {
 	}, err
 }
 
-func (server *Server) Start() error {
+func (server *Server) Start(ctx context.Context) error {
+	mux := http.NewServeMux()
 	for _, api := range server.APIs {
 		newApi := api
-		http.HandleFunc(newApi.MakeHundleFunc())
+		mux.HandleFunc(newApi.MakeHundleFunc())
 		log.Printf("Registered API: %s", api.Name)
 	}
 
 	port := strconv.Itoa(server.Port)
-	log.Printf("Start server port:%s", port)
-	err := http.ListenAndServe(":"+port, nil)
-	if err != nil {
-		return err
+	httpSrv := &http.Server{
+		Addr:    ":" + port,
+		Handler: mux,
+		BaseContext: func(_ net.Listener) context.Context {
+			return ctx
+		},
 	}
-	return nil
+
+	errCh := make(chan error, 1)
+	go func() {
+		log.Printf("Start server port:%s", port)
+		errCh <- httpSrv.ListenAndServe()
+	}()
+
+	select {
+	case <-ctx.Done():
+		log.Println("shutdown signal received, shutting down HTTP server")
+		shutdownCtx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
+		defer cancel()
+		if err := httpSrv.Shutdown(shutdownCtx); err != nil {
+			return err
+		}
+		return nil
+	case err := <-errCh:
+		if err != nil && err != http.ErrServerClosed {
+			return err
+		}
+		return nil
+	}
 }

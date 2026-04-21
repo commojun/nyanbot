@@ -1,12 +1,13 @@
 package alarm
 
 import (
+	"context"
 	"log"
 
 	"github.com/commojun/nyanbot/app/linebot"
 	"github.com/commojun/nyanbot/app/time_util"
-	"github.com/commojun/nyanbot/masterdata"
 	"github.com/commojun/nyanbot/constant"
+	"github.com/commojun/nyanbot/masterdata"
 	"github.com/commojun/nyanbot/masterdata/table"
 )
 
@@ -25,9 +26,12 @@ func New(bot *linebot.LineBot) *AlarmManager {
 	return &am
 }
 
-func (am *AlarmManager) Run() error {
+func (am *AlarmManager) Run(ctx context.Context) error {
 
 	for _, a := range am.Alarms {
+		if err := ctx.Err(); err != nil {
+			return err
+		}
 		chk, err := Check(&a, time_util.LocalTime(), constant.BaseMinuteDuration)
 		if err != nil {
 			log.Printf("[ID:%s] error: %s", a.ID, err)
@@ -36,7 +40,7 @@ func (am *AlarmManager) Run() error {
 		if chk == false {
 			continue
 		}
-		err = am.Bot.TextMessageWithRoomKey(a.Message, a.RoomKey)
+		err = am.Bot.TextMessageWithRoomKey(ctx, a.Message, a.RoomKey)
 		if err != nil {
 			log.Printf("[ID:%s] error: %s", a.ID, err)
 		}

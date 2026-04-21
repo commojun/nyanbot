@@ -1,7 +1,12 @@
 package main
 
 import (
+	"context"
+	"errors"
 	"log"
+	"os"
+	"os/signal"
+	"syscall"
 
 	"github.com/alecthomas/kong"
 	"github.com/commojun/nyanbot/app/alarm"
@@ -25,73 +30,80 @@ type CLI struct {
 // ServerCmd: HTTP サーバーを起動
 type ServerCmd struct{}
 
-func (cmd *ServerCmd) Run(ctx *CLI) error {
-	if err := masterdata.Initialize(ctx.Config); err != nil {
-		log.Fatal(err)
+func (cmd *ServerCmd) Run(ctx context.Context, cliCtx *CLI) error {
+	if err := masterdata.Initialize(ctx, cliCtx.Config); err != nil {
+		return err
 	}
 
-	srv, err := server.New(ctx.Config)
+	srv, err := server.New(cliCtx.Config)
 	if err != nil {
-		log.Fatal(err)
+		return err
 	}
 
-	return srv.Start()
+	return srv.Start(ctx)
 }
 
 // HelloCmd: テスト用 hello メッセージを送信
 type HelloCmd struct{}
 
-func (cmd *HelloCmd) Run(ctx *CLI) error {
-	if err := masterdata.Initialize(ctx.Config); err != nil {
-		log.Fatal(err)
+func (cmd *HelloCmd) Run(ctx context.Context, cliCtx *CLI) error {
+	if err := masterdata.Initialize(ctx, cliCtx.Config); err != nil {
+		return err
 	}
 
-	bot, err := linebot.New(ctx.Config)
+	bot, err := linebot.New(cliCtx.Config)
 	if err != nil {
-		log.Fatal(err)
+		return err
 	}
 
 	h := hello.New(bot)
-	return h.Say()
+	return h.Say(ctx)
 }
 
 // AlarmCmd: アラームチェッカーを実行
 type AlarmCmd struct{}
 
-func (cmd *AlarmCmd) Run(ctx *CLI) error {
-	if err := masterdata.Initialize(ctx.Config); err != nil {
-		log.Fatal(err)
+func (cmd *AlarmCmd) Run(ctx context.Context, cliCtx *CLI) error {
+	if err := masterdata.Initialize(ctx, cliCtx.Config); err != nil {
+		return err
 	}
 
-	bot, err := linebot.New(ctx.Config)
+	bot, err := linebot.New(cliCtx.Config)
 	if err != nil {
-		log.Fatal(err)
+		return err
 	}
 
 	alm := alarm.New(bot)
-	return alm.Run()
+	return alm.Run(ctx)
 }
 
 // AnniversaryCmd: 記念日チェッカーを実行
 type AnniversaryCmd struct{}
 
-func (cmd *AnniversaryCmd) Run(ctx *CLI) error {
-	if err := masterdata.Initialize(ctx.Config); err != nil {
-		log.Fatal(err)
+func (cmd *AnniversaryCmd) Run(ctx context.Context, cliCtx *CLI) error {
+	if err := masterdata.Initialize(ctx, cliCtx.Config); err != nil {
+		return err
 	}
 
-	bot, err := linebot.New(ctx.Config)
+	bot, err := linebot.New(cliCtx.Config)
 	if err != nil {
-		log.Fatal(err)
+		return err
 	}
 
 	anniv := anniversary.New(bot)
-	return anniv.Run()
+	return anniv.Run(ctx)
 }
 
 func main() {
+	ctx, stop := signal.NotifyContext(context.Background(), os.Interrupt, syscall.SIGTERM)
+	defer stop()
+
 	var cli CLI
-	ctx := kong.Parse(&cli)
-	err := ctx.Run(&cli)
-	ctx.FatalIfErrorf(err)
+	kongCtx := kong.Parse(&cli)
+	err := kongCtx.Run(ctx, &cli)
+	if errors.Is(err, context.Canceled) {
+		log.Println("received shutdown signal, exiting normally")
+		return
+	}
+	kongCtx.FatalIfErrorf(err)
 }

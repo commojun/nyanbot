@@ -1,6 +1,5 @@
 NYAN_SERVER_PORT=portnum
 NYAN_MESSAGE_TOKEN=token
-NYAN_REDIS_HOST=redis:6379
 
 NYAN_CHANNEL_SECRET=line_channel_secret
 NYAN_ACCESS_TOKEN=line_access_token

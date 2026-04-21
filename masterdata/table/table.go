@@ -1,6 +1,7 @@
 package table
 
 import (
+	"context"
 	"reflect"
 
 	"github.com/commojun/nyanbot/app/sheet"
@@ -11,7 +12,7 @@ type Tables struct {
 	Anniversaries []Anniversary `tableName:"anniversary"`
 }
 
-func LoadTablesFromSheet(s *sheet.Sheet, sheetID string) (*Tables, error) {
+func LoadTablesFromSheet(ctx context.Context, s *sheet.Sheet, sheetID string) (*Tables, error) {
 	ts := &Tables{}
 
 	tsType := reflect.TypeOf(*ts)
@@ -19,7 +20,7 @@ func LoadTablesFromSheet(s *sheet.Sheet, sheetID string) (*Tables, error) {
 		// tableを生成
 		tName := tsType.Field(i).Tag.Get("tableName")
 		tType := tsType.Field(i).Type
-		tValue, err := getTableFromSheet(s, tType, tName, sheetID)
+		tValue, err := getTableFromSheet(ctx, s, tType, tName, sheetID)
 		if err != nil {
 			return nil, err
 		}
@@ -30,9 +31,9 @@ func LoadTablesFromSheet(s *sheet.Sheet, sheetID string) (*Tables, error) {
 	return ts, nil
 }
 
-func getTableFromSheet(s *sheet.Sheet, tType reflect.Type, tName string, sheetID string) (reflect.Value, error) {
+func getTableFromSheet(ctx context.Context, s *sheet.Sheet, tType reflect.Type, tName string, sheetID string) (reflect.Value, error) {
 	// シートからデータを取得
-	res, err := s.Get(sheetID, tName)
+	res, err := s.Get(ctx, sheetID, tName)
 	if err != nil {
 		return reflect.Value{}, err
 	}

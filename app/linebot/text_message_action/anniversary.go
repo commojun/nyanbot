@@ -17,7 +17,7 @@ func doRandomAnniversary(tma *TextMessageAction) error {
 		return err
 	}
 
-	err = tma.Bot.TextReply(msg, tma.Event.ReplyToken)
+	err = tma.Bot.TextReply(tma.Ctx, msg, tma.Event.ReplyToken)
 	if err != nil {
 		return err
 	}

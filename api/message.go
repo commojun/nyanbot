@@ -1,6 +1,7 @@
 package api
 
 import (
+	"context"
 	"fmt"
 	"net/http"
 
@@ -11,7 +12,7 @@ import (
 func makeMessageAPI(cfg config.Config) API {
 	return API{
 		Name: "/message",
-		Post: func(req *http.Request, res *Response) error {
+		Post: func(ctx context.Context, req *http.Request, res *Response) error {
 			bot, err := linebot.New(cfg)
 			if err != nil {
 				res.Status = http.StatusInternalServerError
@@ -34,7 +35,7 @@ func makeMessageAPI(cfg config.Config) API {
 				return fmt.Errorf("Token does not match")
 			}
 
-			err = bot.TextMessageWithRoomKey(parsedReq.Message, parsedReq.RoomKey)
+			err = bot.TextMessageWithRoomKey(ctx, parsedReq.Message, parsedReq.RoomKey)
 			if err != nil {
 				res.Status = http.StatusInternalServerError
 				return err

@@ -1,6 +1,7 @@
 package api
 
 import (
+	"context"
 	"encoding/json"
 	"fmt"
 	"io"
@@ -14,8 +15,8 @@ import (
 
 type API struct {
 	Name string
-	Get  func(*http.Request, *Response) error
-	Post func(*http.Request, *Response) error
+	Get  func(context.Context, *http.Request, *Response) error
+	Post func(context.Context, *http.Request, *Response) error
 }
 
 type Response struct {
@@ -34,6 +35,7 @@ func New(cfg config.Config) ([]API, error) {
 
 func (api *API) MakeHundleFunc() (string, func(http.ResponseWriter, *http.Request)) {
 	return api.Name, func(w http.ResponseWriter, req *http.Request) {
+		ctx := req.Context()
 		res := Response{
 			Status:  http.StatusOK,
 			Message: "OK",
@@ -42,9 +44,9 @@ func (api *API) MakeHundleFunc() (string, func(http.ResponseWriter, *http.Reques
 		var err error
 
 		if req.Method == http.MethodPost && api.Post != nil {
-			err = api.Post(req, &res)
+			err = api.Post(ctx, req, &res)
 		} else if req.Method == http.MethodGet && api.Get != nil {
-			err = api.Get(req, &res)
+			err = api.Get(ctx, req, &res)
 		} else {
 			// リクエストされたメソッドが用意されていない
 			res.Status = http.StatusMethodNotAllowed

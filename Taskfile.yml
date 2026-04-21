@@ -14,6 +14,12 @@ tasks:
     cmds:
       - go test ./...
 
+  serve:
+    desc: ローカルでserverを起動 (envfileを読み込む)
+    dotenv: ['envfile']
+    cmds:
+      - go run cmd/nyan/nyan.go server
+
   release:
     desc: 新しいリリースタグを作成してプッシュ (VERSION=x.x.x)
     cmds:

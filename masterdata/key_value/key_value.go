@@ -1,6 +1,7 @@
 package key_value
 
 import (
+	"context"
 	"fmt"
 	"reflect"
 
@@ -14,19 +15,19 @@ var (
 )
 
 type KVs struct {
-	Rooms    map[string]string `kvName:"room"`
+	Rooms     map[string]string `kvName:"room"`
 	Nicknames map[string]string `kvName:"nickname"`
-	Tests    map[string]string `kvName:"testkv"`
+	Tests     map[string]string `kvName:"testkv"`
 }
 
-func LoadKVsFromSheet(s *sheet.Sheet, sheetID string) (*KVs, error) {
+func LoadKVsFromSheet(ctx context.Context, s *sheet.Sheet, sheetID string) (*KVs, error) {
 	kvs := &KVs{}
 
 	kvsType := reflect.TypeOf(*kvs)
 	for i := 0; i < kvsType.NumField(); i++ {
 		// kvを作成
 		kvName := kvsType.Field(i).Tag.Get("kvName")
-		kv, err := getKVFromSheet(s, kvName, sheetID)
+		kv, err := getKVFromSheet(ctx, s, kvName, sheetID)
 		if err != nil {
 			return nil, err
 		}
@@ -37,9 +38,9 @@ func LoadKVsFromSheet(s *sheet.Sheet, sheetID string) (*KVs, error) {
 	return kvs, nil
 }
 
-func getKVFromSheet(s *sheet.Sheet, kvName string, sheetID string) (*map[string]string, error) {
+func getKVFromSheet(ctx context.Context, s *sheet.Sheet, kvName string, sheetID string) (*map[string]string, error) {
 	// シートからデータを取得
-	res, err := s.Get(sheetID, kvName)
+	res, err := s.Get(ctx, sheetID, kvName)
 	if err != nil {
 		return &map[string]string{}, err
 	}

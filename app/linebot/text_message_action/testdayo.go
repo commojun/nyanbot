@@ -8,7 +8,7 @@ var (
 )
 
 func doTest(tma *TextMessageAction) error {
-	err := tma.Bot.TextReply("これはテストへの返信だよ！！", tma.Event.ReplyToken)
+	err := tma.Bot.TextReply(tma.Ctx, "これはテストへの返信だよ！！", tma.Event.ReplyToken)
 	if err != nil {
 		return err
 	}

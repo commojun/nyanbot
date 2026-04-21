@@ -1,6 +1,7 @@
 package api
 
 import (
+	"context"
 	"errors"
 	"log"
 	"net/http"
@@ -14,7 +15,7 @@ import (
 func makeLineHookAPI(cfg config.Config) API {
 	return API{
 		Name: "/callback",
-		Post: func(req *http.Request, res *Response) error {
+		Post: func(ctx context.Context, req *http.Request, res *Response) error {
 			bot, err := linebot.New(cfg)
 			if err != nil {
 				res.Status = http.StatusInternalServerError
@@ -31,19 +32,22 @@ func makeLineHookAPI(cfg config.Config) API {
 				return err
 			}
 
-			actByLineEvents(bot, cb.Events)
+			actByLineEvents(ctx, bot, cb.Events)
 			return nil
 		},
 	}
 }
 
-func actByLineEvents(bot *linebot.LineBot, events []webhook.EventInterface) {
+func actByLineEvents(ctx context.Context, bot *linebot.LineBot, events []webhook.EventInterface) {
 	for _, event := range events {
+		if ctx.Err() != nil {
+			return
+		}
 		switch e := event.(type) {
 		case webhook.MessageEvent:
 			switch msg := e.Message.(type) {
 			case webhook.TextMessageContent:
-				tma := text_message_action.New(bot, e, msg)
+				tma := text_message_action.New(ctx, bot, e, msg)
 				tma.Do()
 			case webhook.ImageMessageContent:
 				log.Printf("[linebot.ActByEvents] ImageMessage")

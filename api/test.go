@@ -1,6 +1,9 @@
 package api
 
-import "net/http"
+import (
+	"context"
+	"net/http"
+)
 
 var (
 	test = API{
@@ -9,7 +12,7 @@ var (
 	}
 )
 
-func getTest(req *http.Request, res *Response) error {
+func getTest(ctx context.Context, req *http.Request, res *Response) error {
 	res.Message = "this is test"
 	return nil
 }

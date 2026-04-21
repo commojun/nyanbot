@@ -1,6 +1,7 @@
 package text_message_action
 
 import (
+	"context"
 	"log"
 	"strings"
 
@@ -9,13 +10,15 @@ import (
 )
 
 type TextMessageAction struct {
+	Ctx     context.Context
 	Bot     *linebot.LineBot
 	Event   webhook.MessageEvent
 	Message webhook.TextMessageContent
 }
 
-func New(bot *linebot.LineBot, event webhook.MessageEvent, msg webhook.TextMessageContent) *TextMessageAction {
+func New(ctx context.Context, bot *linebot.LineBot, event webhook.MessageEvent, msg webhook.TextMessageContent) *TextMessageAction {
 	return &TextMessageAction{
+		Ctx:     ctx,
 		Bot:     bot,
 		Event:   event,
 		Message: msg,
@@ -64,7 +67,7 @@ func (tma *TextMessageAction) Do() {
 }
 
 func echo(tma *TextMessageAction) error {
-	err := tma.Bot.TextReply(tma.Message.Text, tma.Event.ReplyToken)
+	err := tma.Bot.TextReply(tma.Ctx, tma.Message.Text, tma.Event.ReplyToken)
 	if err != nil {
 		return err
 	}
