@@ -30,10 +30,7 @@ type CLI struct {
 // ServerCmd: HTTP サーバーを起動
 type ServerCmd struct{}
 
-func (cmd *ServerCmd) Run(cliCtx *CLI) error {
-	ctx, stop := signal.NotifyContext(context.Background(), os.Interrupt, syscall.SIGTERM)
-	defer stop()
-
+func (cmd *ServerCmd) Run(ctx context.Context, cliCtx *CLI) error {
 	if err := masterdata.Initialize(ctx, cliCtx.Config); err != nil {
 		return err
 	}
@@ -49,10 +46,7 @@ func (cmd *ServerCmd) Run(cliCtx *CLI) error {
 // HelloCmd: テスト用 hello メッセージを送信
 type HelloCmd struct{}
 
-func (cmd *HelloCmd) Run(cliCtx *CLI) error {
-	ctx, stop := signal.NotifyContext(context.Background(), os.Interrupt, syscall.SIGTERM)
-	defer stop()
-
+func (cmd *HelloCmd) Run(ctx context.Context, cliCtx *CLI) error {
 	if err := masterdata.Initialize(ctx, cliCtx.Config); err != nil {
 		return err
 	}
@@ -69,10 +63,7 @@ func (cmd *HelloCmd) Run(cliCtx *CLI) error {
 // AlarmCmd: アラームチェッカーを実行
 type AlarmCmd struct{}
 
-func (cmd *AlarmCmd) Run(cliCtx *CLI) error {
-	ctx, stop := signal.NotifyContext(context.Background(), os.Interrupt, syscall.SIGTERM)
-	defer stop()
-
+func (cmd *AlarmCmd) Run(ctx context.Context, cliCtx *CLI) error {
 	if err := masterdata.Initialize(ctx, cliCtx.Config); err != nil {
 		return err
 	}
@@ -89,10 +80,7 @@ func (cmd *AlarmCmd) Run(cliCtx *CLI) error {
 // AnniversaryCmd: 記念日チェッカーを実行
 type AnniversaryCmd struct{}
 
-func (cmd *AnniversaryCmd) Run(cliCtx *CLI) error {
-	ctx, stop := signal.NotifyContext(context.Background(), os.Interrupt, syscall.SIGTERM)
-	defer stop()
-
+func (cmd *AnniversaryCmd) Run(ctx context.Context, cliCtx *CLI) error {
 	if err := masterdata.Initialize(ctx, cliCtx.Config); err != nil {
 		return err
 	}
@@ -107,9 +95,12 @@ func (cmd *AnniversaryCmd) Run(cliCtx *CLI) error {
 }
 
 func main() {
+	ctx, stop := signal.NotifyContext(context.Background(), os.Interrupt, syscall.SIGTERM)
+	defer stop()
+
 	var cli CLI
 	kongCtx := kong.Parse(&cli)
-	err := kongCtx.Run(&cli)
+	err := kongCtx.Run(ctx, &cli)
 	if errors.Is(err, context.Canceled) {
 		log.Println("received shutdown signal, exiting normally")
 		return
