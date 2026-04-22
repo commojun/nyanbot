@@ -1,12 +1,30 @@
 package anniversary
 
 import (
+	"context"
+	"errors"
 	"fmt"
 	"testing"
 	"time"
 
+	"github.com/commojun/nyanbot/app/time_util"
 	"github.com/commojun/nyanbot/masterdata/table"
 )
+
+type mockBot struct {
+	sent []sentMsg
+	err  error
+}
+
+type sentMsg struct {
+	msg     string
+	roomKey string
+}
+
+func (m *mockBot) TextMessageWithRoomKey(ctx context.Context, msg string, roomKey string) error {
+	m.sent = append(m.sent, sentMsg{msg: msg, roomKey: roomKey})
+	return m.err
+}
 
 var jst = time.FixedZone("JST", 9*60*60)
 
@@ -120,4 +138,147 @@ func TestMakeCheckMessage(t *testing.T) {
 			t.Error("エラーが返るべきだが nil だった")
 		}
 	})
+}
+
+func TestAnniversaryManager_Run_EmptyList(t *testing.T) {
+	bot := &mockBot{}
+	am := &AnniversaryManager{Anniversaries: nil, Bot: bot}
+
+	if err := am.Run(context.Background()); err != nil {
+		t.Fatalf("予期しないエラー: %v", err)
+	}
+	if len(bot.sent) != 0 {
+		t.Errorf("送信回数は 0 であるべきだが %d だった", len(bot.sent))
+	}
+}
+
+func TestAnniversaryManager_Run_CancelledContext(t *testing.T) {
+	bot := &mockBot{}
+	// 今日と同じ月日の記念日 → check=true で送信対象になる
+	today := time_util.LocalTime()
+	am := &AnniversaryManager{
+		Anniversaries: []table.Anniversary{
+			{
+				ID:      "1",
+				Date:    today.Format("2006-01-02"),
+				Period:  "100",
+				Name:    "テスト",
+				RoomKey: "room1",
+			},
+		},
+		Bot: bot,
+	}
+
+	ctx, cancel := context.WithCancel(context.Background())
+	cancel()
+
+	err := am.Run(ctx)
+	if !errors.Is(err, context.Canceled) {
+		t.Errorf("context.Canceled が返るべきだが %v だった", err)
+	}
+	if len(bot.sent) != 0 {
+		t.Errorf("キャンセル済み ctx では送信されないべきだが %d 件送信された", len(bot.sent))
+	}
+}
+
+func TestAnniversaryManager_Run_SendsOnMatch(t *testing.T) {
+	bot := &mockBot{}
+	today := time_util.LocalTime()
+	// 今日と同じ月日（n年前）の記念日 → check=true
+	pastDate := time.Date(today.Year()-3, today.Month(), today.Day(), 0, 0, 0, 0, today.Location())
+	am := &AnniversaryManager{
+		Anniversaries: []table.Anniversary{
+			{
+				ID:      "1",
+				Date:    pastDate.Format("2006-01-02"),
+				Period:  "100",
+				Name:    "三周年",
+				RoomKey: "roomA",
+			},
+		},
+		Bot: bot,
+	}
+
+	if err := am.Run(context.Background()); err != nil {
+		t.Fatalf("予期しないエラー: %v", err)
+	}
+	if len(bot.sent) != 1 {
+		t.Fatalf("送信回数は 1 であるべきだが %d だった", len(bot.sent))
+	}
+	if bot.sent[0].roomKey != "roomA" {
+		t.Errorf("roomKey 不正: got %q", bot.sent[0].roomKey)
+	}
+}
+
+func TestAnniversaryManager_Run_SkipsOnNoMatch(t *testing.T) {
+	bot := &mockBot{}
+	today := time_util.LocalTime()
+	// 昨日の日付 + Period=9999 → check=false
+	yesterday := today.AddDate(0, 0, -1)
+	am := &AnniversaryManager{
+		Anniversaries: []table.Anniversary{
+			{
+				ID:      "1",
+				Date:    yesterday.Format("2006-01-02"),
+				Period:  "9999",
+				Name:    "昨日",
+				RoomKey: "roomB",
+			},
+		},
+		Bot: bot,
+	}
+
+	if err := am.Run(context.Background()); err != nil {
+		t.Fatalf("予期しないエラー: %v", err)
+	}
+	if len(bot.sent) != 0 {
+		t.Errorf("マッチしない日は送信されないべきだが %d 件送信された", len(bot.sent))
+	}
+}
+
+func TestAnniversaryManager_Run_PropagatesBotError(t *testing.T) {
+	botErr := errors.New("bot failure")
+	bot := &mockBot{err: botErr}
+	today := time_util.LocalTime()
+	am := &AnniversaryManager{
+		Anniversaries: []table.Anniversary{
+			{
+				ID:      "1",
+				Date:    today.Format("2006-01-02"),
+				Period:  "100",
+				Name:    "本日",
+				RoomKey: "roomC",
+			},
+		},
+		Bot: bot,
+	}
+
+	err := am.Run(context.Background())
+	if !errors.Is(err, botErr) {
+		t.Errorf("bot エラーが伝播するべきだが %v だった", err)
+	}
+}
+
+func TestAnniversaryManager_Run_PropagatesMakeMessageError(t *testing.T) {
+	bot := &mockBot{}
+	am := &AnniversaryManager{
+		Anniversaries: []table.Anniversary{
+			{
+				ID:      "1",
+				Date:    "invalid-date",
+				Period:  "100",
+				Name:    "壊れた記念日",
+				RoomKey: "roomD",
+			},
+		},
+		Bot: bot,
+	}
+
+	err := am.Run(context.Background())
+	if err == nil {
+		t.Error("MakeCheckMessage エラーが伝播するべきだが nil だった")
+	}
+	if len(bot.sent) != 0 {
+		t.Errorf("エラー時は送信されないべきだが %d 件送信された", len(bot.sent))
+	}
 }

@@ -1,6 +1,7 @@
 package text_message_action
 
 import (
+	"context"
 	"math/rand"
 	"time"
 
@@ -15,10 +16,9 @@ var (
 	}
 )
 
-func doOjisan(tma *TextMessageAction) error {
+func doOjisan(ctx context.Context, tma *TextMessageAction) error {
 	userID := extractUserID(tma.Event.Source)
 
-	// 名前取得
 	nickname, err := masterdata.GetKeyVals().Nickname(userID)
 	if err != nil {
 		nickname = "にゃんこ"
@@ -34,5 +34,5 @@ func doOjisan(tma *TextMessageAction) error {
 		return err
 	}
 
-	return tma.Bot.TextReply(tma.Ctx, msg, tma.Event.ReplyToken)
+	return tma.Bot.TextReply(ctx, msg, tma.Event.ReplyToken)
 }

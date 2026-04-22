@@ -5,20 +5,21 @@ import (
 	"log"
 	"strings"
 
-	"github.com/commojun/nyanbot/app/linebot"
 	"github.com/line/line-bot-sdk-go/v8/linebot/webhook"
 )
 
+type LineBot interface {
+	TextReply(ctx context.Context, msg string, replyToken string) error
+}
+
 type TextMessageAction struct {
-	Ctx     context.Context
-	Bot     *linebot.LineBot
+	Bot     LineBot
 	Event   webhook.MessageEvent
 	Message webhook.TextMessageContent
 }
 
-func New(ctx context.Context, bot *linebot.LineBot, event webhook.MessageEvent, msg webhook.TextMessageContent) *TextMessageAction {
+func New(bot LineBot, event webhook.MessageEvent, msg webhook.TextMessageContent) *TextMessageAction {
 	return &TextMessageAction{
-		Ctx:     ctx,
 		Bot:     bot,
 		Event:   event,
 		Message: msg,
@@ -27,7 +28,7 @@ func New(ctx context.Context, bot *linebot.LineBot, event webhook.MessageEvent, 
 
 type Action struct {
 	Prefix string
-	Do     func(*TextMessageAction) error
+	Do     func(context.Context, *TextMessageAction) error
 }
 
 func actions() []Action {
@@ -40,12 +41,12 @@ func actions() []Action {
 	}
 }
 
-func (tma *TextMessageAction) Do() {
+func (tma *TextMessageAction) Do(ctx context.Context) {
 	actFlg := false
 	var err error
 	for _, action := range actions() {
 		if strings.HasPrefix(tma.Message.Text, action.Prefix) {
-			err = action.Do(tma)
+			err = action.Do(ctx, tma)
 			actFlg = true
 			if err != nil {
 				log.Printf("[text_message_action.Do] actionPrefix: %s, error: %s", action.Prefix, err)
@@ -55,23 +56,17 @@ func (tma *TextMessageAction) Do() {
 		}
 	}
 	if !actFlg {
-		err = echo(tma)
+		err = echo(ctx, tma)
 		if err != nil {
 			log.Printf("[text_message_action.Do] action: echo, error: %s, ", err)
 		} else {
 			log.Printf("[text_message_action.Do] action: echo")
 		}
 	}
-
-	return
 }
 
-func echo(tma *TextMessageAction) error {
-	err := tma.Bot.TextReply(tma.Ctx, tma.Message.Text, tma.Event.ReplyToken)
-	if err != nil {
-		return err
-	}
-	return nil
+func echo(ctx context.Context, tma *TextMessageAction) error {
+	return tma.Bot.TextReply(ctx, tma.Message.Text, tma.Event.ReplyToken)
 }
 
 func extractUserID(src webhook.SourceInterface) string {

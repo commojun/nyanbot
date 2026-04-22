@@ -12,6 +12,11 @@ import (
 	"github.com/line/line-bot-sdk-go/v8/linebot/webhook"
 )
 
+type LineBot interface {
+	ParseWebhookRequest(req *http.Request) (*webhook.CallbackRequest, error)
+	TextReply(ctx context.Context, msg string, replyToken string) error
+}
+
 func makeLineHookAPI(cfg config.Config) API {
 	return API{
 		Name: "/callback",
@@ -22,7 +27,7 @@ func makeLineHookAPI(cfg config.Config) API {
 				return err
 			}
 
-			cb, err := webhook.ParseRequest(bot.ChannelSecret, req)
+			cb, err := bot.ParseWebhookRequest(req)
 			if err != nil {
 				if errors.Is(err, webhook.ErrInvalidSignature) {
 					res.Status = http.StatusBadRequest
@@ -38,7 +43,7 @@ func makeLineHookAPI(cfg config.Config) API {
 	}
 }
 
-func actByLineEvents(ctx context.Context, bot *linebot.LineBot, events []webhook.EventInterface) {
+func actByLineEvents(ctx context.Context, bot LineBot, events []webhook.EventInterface) {
 	for _, event := range events {
 		if ctx.Err() != nil {
 			return
@@ -47,8 +52,8 @@ func actByLineEvents(ctx context.Context, bot *linebot.LineBot, events []webhook
 		case webhook.MessageEvent:
 			switch msg := e.Message.(type) {
 			case webhook.TextMessageContent:
-				tma := text_message_action.New(ctx, bot, e, msg)
-				tma.Do()
+				tma := text_message_action.New(bot, e, msg)
+				tma.Do(ctx)
 			case webhook.ImageMessageContent:
 				log.Printf("[linebot.ActByEvents] ImageMessage")
 			default:

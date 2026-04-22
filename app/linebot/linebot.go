@@ -2,10 +2,12 @@ package linebot
 
 import (
 	"context"
+	"net/http"
 
 	"github.com/commojun/nyanbot/config"
 	"github.com/commojun/nyanbot/masterdata"
 	"github.com/line/line-bot-sdk-go/v8/linebot/messaging_api"
+	"github.com/line/line-bot-sdk-go/v8/linebot/webhook"
 )
 
 type LineBot struct {
@@ -53,4 +55,8 @@ func (bot *LineBot) TextReply(ctx context.Context, msg string, replyToken string
 		Messages:   []messaging_api.MessageInterface{messaging_api.TextMessage{Text: msg}},
 	})
 	return err
+}
+
+func (bot *LineBot) ParseWebhookRequest(req *http.Request) (*webhook.CallbackRequest, error) {
+	return webhook.ParseRequest(bot.ChannelSecret, req)
 }

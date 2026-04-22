@@ -8,22 +8,25 @@ import (
 	"strconv"
 	"time"
 
-	"github.com/commojun/nyanbot/app/linebot"
 	"github.com/commojun/nyanbot/app/time_util"
 	"github.com/commojun/nyanbot/masterdata"
 	"github.com/commojun/nyanbot/masterdata/table"
 )
 
+type LineBot interface {
+	TextMessageWithRoomKey(ctx context.Context, msg string, roomKey string) error
+}
+
 type AnniversaryManager struct {
 	Anniversaries []table.Anniversary
-	Bot           *linebot.LineBot
+	Bot           LineBot
 }
 
 var (
 	TEMPLATE = "今日は%sから%d%sだよ！"
 )
 
-func New(bot *linebot.LineBot) *AnniversaryManager {
+func New(bot LineBot) *AnniversaryManager {
 	annivs := masterdata.GetTables().Anniversaries
 
 	am := AnniversaryManager{
@@ -55,9 +58,14 @@ func (am *AnniversaryManager) Run(ctx context.Context) error {
 	return nil
 }
 
-func (am *AnniversaryManager) RandomMsg() (string, error) {
+func RandomMsg() (string, error) {
+	annivs := masterdata.GetTables().Anniversaries
+	if len(annivs) == 0 {
+		return "", fmt.Errorf("no anniversaries available")
+	}
+
 	rand.Seed(time.Now().UnixNano())
-	a := am.Anniversaries[rand.Intn(len(am.Anniversaries))]
+	a := annivs[rand.Intn(len(annivs))]
 
 	msg, _, err := MakeCheckMessage(&a, time_util.LocalTime())
 	if err != nil {
