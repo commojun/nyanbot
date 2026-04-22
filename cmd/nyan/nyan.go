@@ -14,6 +14,7 @@ import (
 	"github.com/commojun/nyanbot/app/hello"
 	"github.com/commojun/nyanbot/app/linebot"
 	"github.com/commojun/nyanbot/app/server"
+	"github.com/commojun/nyanbot/app/weather_notify"
 	"github.com/commojun/nyanbot/config"
 	"github.com/commojun/nyanbot/masterdata"
 )
@@ -25,6 +26,7 @@ type CLI struct {
 	Hello       HelloCmd       `cmd:"" help:"Send hello message"`
 	Alarm       AlarmCmd       `cmd:"" help:"Run alarm checker"`
 	Anniversary AnniversaryCmd `cmd:"" help:"Run anniversary checker"`
+	Weather     WeatherCmd     `cmd:"" help:"Send weather forecast"`
 }
 
 // ServerCmd: HTTP サーバーを起動
@@ -104,6 +106,26 @@ func (cmd *AnniversaryCmd) Run(cliCtx *CLI) error {
 
 	anniv := anniversary.New(bot)
 	return anniv.Run(ctx)
+}
+
+// WeatherCmd: 天気予報をLINEに送信する
+type WeatherCmd struct{}
+
+func (cmd *WeatherCmd) Run(cliCtx *CLI) error {
+	ctx, stop := signal.NotifyContext(context.Background(), os.Interrupt, syscall.SIGTERM)
+	defer stop()
+
+	if err := masterdata.Initialize(ctx, cliCtx.Config); err != nil {
+		return err
+	}
+
+	bot, err := linebot.New(cliCtx.Config)
+	if err != nil {
+		return err
+	}
+
+	wn := weather_notify.New(bot, cliCtx.Config)
+	return wn.Run(ctx)
 }
 
 func main() {

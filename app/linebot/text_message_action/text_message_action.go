@@ -38,6 +38,7 @@ func actions() []Action {
 		ojiline,
 		drawFortune,
 		randomAnniversary,
+		getWeather,
 	}
 }
 
