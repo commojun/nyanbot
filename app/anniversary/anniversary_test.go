@@ -236,6 +236,39 @@ func TestAnniversaryManager_Run_SkipsOnNoMatch(t *testing.T) {
 	}
 }
 
+func TestAnniversaryManager_Run_MixedMatchAndNoMatch(t *testing.T) {
+	// 3件の記念日を用意:
+	// 1: 今日と同じ月日 (match)
+	// 2: 昨日 + Period=9999 (no match)
+	// 3: 今日と同じ月日 (match)
+	bot := &mockBot{}
+	today := time_util.LocalTime()
+	yesterday := today.AddDate(0, 0, -1)
+	past := time.Date(today.Year()-5, today.Month(), today.Day(), 0, 0, 0, 0, today.Location())
+
+	am := &AnniversaryManager{
+		Anniversaries: []table.Anniversary{
+			{ID: "1", Date: past.Format("2006-01-02"), Period: "100", Name: "五周年", RoomKey: "roomA"},
+			{ID: "2", Date: yesterday.Format("2006-01-02"), Period: "9999", Name: "昨日", RoomKey: "roomB"},
+			{ID: "3", Date: today.Format("2006-01-02"), Period: "100", Name: "本日", RoomKey: "roomC"},
+		},
+		Bot: bot,
+	}
+
+	if err := am.Run(context.Background()); err != nil {
+		t.Fatalf("予期しないエラー: %v", err)
+	}
+	if len(bot.sent) != 2 {
+		t.Fatalf("マッチ2件のみ送信されるべきだが %d 件だった", len(bot.sent))
+	}
+	if bot.sent[0].roomKey != "roomA" {
+		t.Errorf("1件目の roomKey が不正: %q", bot.sent[0].roomKey)
+	}
+	if bot.sent[1].roomKey != "roomC" {
+		t.Errorf("2件目の roomKey が不正: %q", bot.sent[1].roomKey)
+	}
+}
+
 func TestAnniversaryManager_Run_PropagatesBotError(t *testing.T) {
 	botErr := errors.New("bot failure")
 	bot := &mockBot{err: botErr}

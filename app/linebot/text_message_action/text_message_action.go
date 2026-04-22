@@ -42,26 +42,24 @@ func actions() []Action {
 }
 
 func (tma *TextMessageAction) Do(ctx context.Context) {
-	actFlg := false
-	var err error
+	// 先勝ち: 最初にマッチしたactionのみ実行する (LINE の ReplyToken が1回限りのため)
 	for _, action := range actions() {
 		if strings.HasPrefix(tma.Message.Text, action.Prefix) {
-			err = action.Do(ctx, tma)
-			actFlg = true
+			err := action.Do(ctx, tma)
 			if err != nil {
 				log.Printf("[text_message_action.Do] actionPrefix: %s, error: %s", action.Prefix, err)
 			} else {
 				log.Printf("[text_message_action.Do] actionPrefix: %s", action.Prefix)
 			}
+			return
 		}
 	}
-	if !actFlg {
-		err = echo(ctx, tma)
-		if err != nil {
-			log.Printf("[text_message_action.Do] action: echo, error: %s, ", err)
-		} else {
-			log.Printf("[text_message_action.Do] action: echo")
-		}
+	// どのactionにもマッチしなかった場合のみechoにフォールバック
+	err := echo(ctx, tma)
+	if err != nil {
+		log.Printf("[text_message_action.Do] action: echo, error: %s, ", err)
+	} else {
+		log.Printf("[text_message_action.Do] action: echo")
 	}
 }
 

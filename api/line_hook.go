@@ -26,21 +26,24 @@ func makeLineHookAPI(cfg config.Config) API {
 				res.Status = http.StatusInternalServerError
 				return err
 			}
-
-			cb, err := bot.ParseWebhookRequest(req)
-			if err != nil {
-				if errors.Is(err, webhook.ErrInvalidSignature) {
-					res.Status = http.StatusBadRequest
-				} else {
-					res.Status = http.StatusInternalServerError
-				}
-				return err
-			}
-
-			actByLineEvents(ctx, bot, cb.Events)
-			return nil
+			return handleCallback(ctx, bot, req, res)
 		},
 	}
+}
+
+func handleCallback(ctx context.Context, bot LineBot, req *http.Request, res *Response) error {
+	cb, err := bot.ParseWebhookRequest(req)
+	if err != nil {
+		if errors.Is(err, webhook.ErrInvalidSignature) {
+			res.Status = http.StatusBadRequest
+		} else {
+			res.Status = http.StatusInternalServerError
+		}
+		return err
+	}
+
+	actByLineEvents(ctx, bot, cb.Events)
+	return nil
 }
 
 func actByLineEvents(ctx context.Context, bot LineBot, events []webhook.EventInterface) {

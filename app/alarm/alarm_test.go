@@ -111,6 +111,43 @@ func TestAlarmManager_Run_SkipsNonMatchingAlarm(t *testing.T) {
 	}
 }
 
+func TestAlarmManager_Run_MixedMatchNonMatch(t *testing.T) {
+	// マッチ/非マッチを混ぜた時に、マッチした分だけ送信され順序も保たれる
+	nonMatching := table.Alarm{
+		ID:         "2",
+		Month:      "13", // 絶対にマッチしない
+		WeekNum:    "*",
+		DayOfWeek:  "*",
+		DayOfMonth: "*",
+		Hour:       "*",
+		Minute:     "*",
+		Message:    "never",
+		RoomKey:    "roomX",
+	}
+	bot := &mockBot{}
+	am := &AlarmManager{
+		Alarms: []table.Alarm{
+			wildcardAlarm("1", "first", "roomA"),
+			nonMatching,
+			wildcardAlarm("3", "third", "roomC"),
+		},
+		Bot: bot,
+	}
+
+	if err := am.Run(context.Background()); err != nil {
+		t.Fatalf("予期しないエラー: %v", err)
+	}
+	if len(bot.sent) != 2 {
+		t.Fatalf("マッチ2件のみ送信されるべきだが %d 件だった", len(bot.sent))
+	}
+	if bot.sent[0].msg != "first" || bot.sent[0].roomKey != "roomA" {
+		t.Errorf("1件目が不正: %+v", bot.sent[0])
+	}
+	if bot.sent[1].msg != "third" || bot.sent[1].roomKey != "roomC" {
+		t.Errorf("2件目が不正: %+v", bot.sent[1])
+	}
+}
+
 func TestAlarmManager_Run_ContinuesOnBotError(t *testing.T) {
 	// Bot がエラーを返してもループは継続する（現仕様）
 	bot := &mockBot{err: errors.New("bot error")}
