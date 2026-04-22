@@ -5,7 +5,8 @@ import (
 
 	"golang.org/x/oauth2/google"
 	"golang.org/x/oauth2/jwt"
-	"google.golang.org/api/sheets/v4"
+	"google.golang.org/api/option"
+	sheets "google.golang.org/api/sheets/v4"
 )
 
 type Config struct {
@@ -31,7 +32,7 @@ func New(ctx context.Context, cfg Config) (*Sheet, error) {
 		jwtCfg.TokenURL = google.JWTTokenURL
 	}
 
-	sheetService, err := sheets.New(jwtCfg.Client(ctx))
+	sheetService, err := sheets.NewService(ctx, option.WithHTTPClient(jwtCfg.Client(ctx)))
 	if err != nil {
 		return &Sheet{}, err
 	}
@@ -41,11 +42,10 @@ func New(ctx context.Context, cfg Config) (*Sheet, error) {
 	}, nil
 }
 
-func (sheet *Sheet) Get(ctx context.Context, spreadsheetID string, sheetName string) (*sheets.ValueRange, error) {
+func (sheet *Sheet) Get(ctx context.Context, spreadsheetID string, sheetName string) ([][]any, error) {
 	res, err := sheet.Service.Spreadsheets.Values.Get(spreadsheetID, sheetName).Context(ctx).Do()
 	if err != nil {
-		return &sheets.ValueRange{}, err
+		return nil, err
 	}
-
-	return res, err
+	return res.Values, nil
 }

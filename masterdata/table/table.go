@@ -2,9 +2,8 @@ package table
 
 import (
 	"context"
+	"fmt"
 	"reflect"
-
-	"github.com/commojun/nyanbot/app/sheet"
 )
 
 type Tables struct {
@@ -12,58 +11,85 @@ type Tables struct {
 	Anniversaries []Anniversary `tableName:"anniversary"`
 }
 
-func LoadTablesFromSheet(ctx context.Context, s *sheet.Sheet, sheetID string) (*Tables, error) {
+// SheetFetcher: スプレッドシートから指定シート名の行データを取得するための抽象
+type SheetFetcher interface {
+	Get(ctx context.Context, spreadsheetID string, sheetName string) ([][]any, error)
+}
+
+func LoadTablesFromSheet(ctx context.Context, s SheetFetcher, sheetID string) (*Tables, error) {
 	ts := &Tables{}
 
 	tsType := reflect.TypeOf(*ts)
 	for i := 0; i < tsType.NumField(); i++ {
-		// tableを生成
 		tName := tsType.Field(i).Tag.Get("tableName")
 		tType := tsType.Field(i).Type
 		tValue, err := getTableFromSheet(ctx, s, tType, tName, sheetID)
 		if err != nil {
 			return nil, err
 		}
-		// 生成したtableをtablesにセットする
 		reflect.ValueOf(ts).Elem().Field(i).Set(tValue.Elem())
 	}
 
 	return ts, nil
 }
 
-func getTableFromSheet(ctx context.Context, s *sheet.Sheet, tType reflect.Type, tName string, sheetID string) (reflect.Value, error) {
-	// シートからデータを取得
-	res, err := s.Get(ctx, sheetID, tName)
+func getTableFromSheet(ctx context.Context, s SheetFetcher, tType reflect.Type, tName string, sheetID string) (reflect.Value, error) {
+	rows, err := s.Get(ctx, sheetID, tName)
 	if err != nil {
 		return reflect.Value{}, err
 	}
+	return parseTableRows(tType, rows)
+}
 
-	// テーブルのヘッダ情報
-	header := res.Values[0]
-	headerMap := make(map[string]int, len(header))
-	for i, cell := range header {
-		headerMap[cell.(string)] = i
+// parseTableRows: Google Sheets の生データ ([][]any) を構造体スライスにマッピングする純粋関数
+// tType は対象スライス型 (例: []Alarm, []Anniversary)。構造体フィールドは json タグでヘッダ列と対応づける
+func parseTableRows(tType reflect.Type, rows [][]any) (reflect.Value, error) {
+	if len(rows) == 0 {
+		return reflect.New(tType), fmt.Errorf("no rows: header missing")
 	}
 
-	data := res.Values[1:]
+	header := rows[0]
+	headerMap := make(map[string]int, len(header))
+	for i, cell := range header {
+		name, ok := cell.(string)
+		if !ok {
+			return reflect.Value{}, fmt.Errorf("header cell %d is not a string", i)
+		}
+		headerMap[name] = i
+	}
+
+	idIdx, ok := headerMap["id"]
+	if !ok {
+		return reflect.Value{}, fmt.Errorf("id column is missing in header")
+	}
+
 	tValue := reflect.New(tType)
-	for _, row := range data {
-		// id列が空の行はスキップする
-		if row[headerMap["id"]] == "" {
+	objType := tType.Elem()
+	for rowIdx, row := range rows[1:] {
+		// id列が空の行はスキップ
+		if idIdx >= len(row) || row[idIdx] == "" {
 			continue
 		}
 
-		// 行データの作成
-		objType := tType.Elem()
 		objValue := reflect.New(objType)
 		for j := 0; j < objType.NumField(); j++ {
-			cIndex := headerMap[objType.Field(j).Tag.Get("json")]
-			value := row[cIndex]
-			objValue.Elem().Field(j).SetString(value.(string))
+			colName := objType.Field(j).Tag.Get("json")
+			cIndex, ok := headerMap[colName]
+			if !ok {
+				return reflect.Value{}, fmt.Errorf("column %q (field %q) not found in header", colName, objType.Field(j).Name)
+			}
+			if cIndex >= len(row) {
+				// 行末が足りない場合は空文字扱い
+				continue
+			}
+			value, ok := row[cIndex].(string)
+			if !ok {
+				return reflect.Value{}, fmt.Errorf("row %d column %q is not a string", rowIdx+1, colName)
+			}
+			objValue.Elem().Field(j).SetString(value)
 		}
-		// 行を追加
 		tValue.Elem().Set(reflect.Append(tValue.Elem(), objValue.Elem()))
 	}
 
-	return tValue, err
+	return tValue, nil
 }

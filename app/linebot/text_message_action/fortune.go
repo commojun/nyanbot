@@ -1,6 +1,7 @@
 package text_message_action
 
 import (
+	"context"
 	"fmt"
 
 	"github.com/commojun/nyanbot/app/fortune"
@@ -14,10 +15,9 @@ var (
 	}
 )
 
-func doDrawFortune(tma *TextMessageAction) error {
+func doDrawFortune(ctx context.Context, tma *TextMessageAction) error {
 	userID := extractUserID(tma.Event.Source)
 
-	// 名前取得
 	nickname, err := masterdata.GetKeyVals().Nickname(userID)
 	if err != nil {
 		nickname = "あなた"
@@ -28,5 +28,5 @@ func doDrawFortune(tma *TextMessageAction) error {
 
 	msg := fmt.Sprintf("%sの今日の運勢\n>>>%s<<<", nickname, result)
 
-	return tma.Bot.TextReply(tma.Ctx, msg, tma.Event.ReplyToken)
+	return tma.Bot.TextReply(ctx, msg, tma.Event.ReplyToken)
 }

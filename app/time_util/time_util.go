@@ -1,7 +1,6 @@
 package time_util
 
 import (
-	"fmt"
 	"time"
 )
 
@@ -22,7 +21,6 @@ func JSTParse(s string) (time.Time, error) {
 	if err != nil {
 		return time.Time{}, err
 	}
-	fmt.Println(t)
 	return t, nil
 }
 

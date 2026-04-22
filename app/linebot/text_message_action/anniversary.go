@@ -1,6 +1,10 @@
 package text_message_action
 
-import "github.com/commojun/nyanbot/app/anniversary"
+import (
+	"context"
+
+	"github.com/commojun/nyanbot/app/anniversary"
+)
 
 var (
 	randomAnniversary = Action{
@@ -9,18 +13,11 @@ var (
 	}
 )
 
-func doRandomAnniversary(tma *TextMessageAction) error {
-	am := anniversary.New(tma.Bot)
-
-	msg, err := am.RandomMsg()
+func doRandomAnniversary(ctx context.Context, tma *TextMessageAction) error {
+	msg, err := anniversary.RandomMsg()
 	if err != nil {
 		return err
 	}
 
-	err = tma.Bot.TextReply(tma.Ctx, msg, tma.Event.ReplyToken)
-	if err != nil {
-		return err
-	}
-
-	return nil
+	return tma.Bot.TextReply(ctx, msg, tma.Event.ReplyToken)
 }

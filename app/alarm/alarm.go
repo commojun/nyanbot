@@ -4,19 +4,22 @@ import (
 	"context"
 	"log"
 
-	"github.com/commojun/nyanbot/app/linebot"
 	"github.com/commojun/nyanbot/app/time_util"
 	"github.com/commojun/nyanbot/constant"
 	"github.com/commojun/nyanbot/masterdata"
 	"github.com/commojun/nyanbot/masterdata/table"
 )
 
-type AlarmManager struct {
-	Alarms []table.Alarm
-	Bot    *linebot.LineBot
+type LineBot interface {
+	TextMessageWithRoomKey(ctx context.Context, msg string, roomKey string) error
 }
 
-func New(bot *linebot.LineBot) *AlarmManager {
+type AlarmManager struct {
+	Alarms []table.Alarm
+	Bot    LineBot
+}
+
+func New(bot LineBot) *AlarmManager {
 	alms := masterdata.GetTables().Alarms
 
 	am := AlarmManager{

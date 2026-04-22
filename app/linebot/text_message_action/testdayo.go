@@ -1,5 +1,7 @@
 package text_message_action
 
+import "context"
+
 var (
 	testdayo = Action{
 		Prefix: "てすと",
@@ -7,10 +9,6 @@ var (
 	}
 )
 
-func doTest(tma *TextMessageAction) error {
-	err := tma.Bot.TextReply(tma.Ctx, "これはテストへの返信だよ！！", tma.Event.ReplyToken)
-	if err != nil {
-		return err
-	}
-	return nil
+func doTest(ctx context.Context, tma *TextMessageAction) error {
+	return tma.Bot.TextReply(ctx, "これはテストへの返信だよ！！", tma.Event.ReplyToken)
 }

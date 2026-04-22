@@ -1,7 +1,6 @@
 package fortune
 
 import (
-	"fmt"
 	"math/rand"
 	"time"
 )
@@ -42,9 +41,8 @@ func (f *Fortune) Draw(seed int) string {
 	//日付と引数に依存したseedを作成
 	t := time.Now()
 	day := t.Truncate(time.Hour).Add(-time.Duration(t.Hour()) * time.Hour)
-	fmt.Println(day)
-	rand.Seed(day.Unix() + int64(seed))
-	i := rand.Intn(len(f.Results))
+	r := rand.New(rand.NewSource(day.Unix() + int64(seed)))
+	i := r.Intn(len(f.Results))
 
 	return f.Results[i]
 }
