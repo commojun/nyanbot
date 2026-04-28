@@ -1,0 +1,24 @@
+apiVersion: batch/v1
+kind: CronJob
+metadata:
+  name: weather
+  namespace: nyan
+spec:
+  schedule: "0 22 * * *"
+  successfulJobsHistoryLimit: 3
+  failedJobsHistoryLimit: 2
+  jobTemplate:
+    spec:
+      template:
+        metadata:
+          labels:
+            app: weather
+        spec:
+          restartPolicy: Never
+          containers:
+          - name: weather
+            image: commojun/nyanbot
+            command: ["nyan", "weather"]
+            envFrom:
+            - secretRef:
+                name: nyan-secret
