@@ -3,7 +3,7 @@ package main
 import (
 	"fmt"
 
-	"github.com/commojun/nyanbot/app/fortune"
+	"github.com/commojun/nyanbot/internal/apps/fortune"
 )
 
 func main() {

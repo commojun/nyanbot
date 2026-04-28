@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"log"
 
-	"github.com/commojun/nyanbot/app/ojisan"
+	"github.com/commojun/nyanbot/internal/apps/ojisan"
 )
 
 func main() {
