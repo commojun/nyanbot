@@ -6,4 +6,4 @@ resources:
 
 images:
 - name: commojun/nyanbot
-  newTag: 0.1.7
+  newTag: 0.1.8
