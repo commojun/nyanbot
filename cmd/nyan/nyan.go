@@ -9,13 +9,13 @@ import (
 	"syscall"
 
 	"github.com/alecthomas/kong"
-	"github.com/commojun/nyanbot/app/alarm"
-	"github.com/commojun/nyanbot/app/anniversary"
-	"github.com/commojun/nyanbot/app/hello"
-	"github.com/commojun/nyanbot/app/linebot"
-	"github.com/commojun/nyanbot/app/server"
-	"github.com/commojun/nyanbot/config"
-	"github.com/commojun/nyanbot/masterdata"
+	"github.com/commojun/nyanbot/internal/apps/alarm"
+	"github.com/commojun/nyanbot/internal/apps/anniversary"
+	"github.com/commojun/nyanbot/internal/apps/hello"
+	"github.com/commojun/nyanbot/internal/config"
+	"github.com/commojun/nyanbot/internal/handler"
+	"github.com/commojun/nyanbot/internal/linebot"
+	"github.com/commojun/nyanbot/internal/masterdata"
 )
 
 type CLI struct {
@@ -38,7 +38,7 @@ func (cmd *ServerCmd) Run(cliCtx *CLI) error {
 		return err
 	}
 
-	srv, err := server.New(cliCtx.Config)
+	srv, err := handler.NewServer(cliCtx.Config)
 	if err != nil {
 		return err
 	}
@@ -82,7 +82,7 @@ func (cmd *AlarmCmd) Run(cliCtx *CLI) error {
 		return err
 	}
 
-	alm := alarm.New(bot)
+	alm := alarm.New(cliCtx.Config, bot)
 	return alm.Run(ctx)
 }
 

@@ -1,0 +1,46 @@
+package handler
+
+import (
+	"context"
+	"fmt"
+	"net/http"
+
+	"github.com/commojun/nyanbot/internal/config"
+	"github.com/commojun/nyanbot/internal/linebot"
+)
+
+func makeMessageAPI(cfg config.Config) API {
+	return API{
+		Name: "/message",
+		Post: func(ctx context.Context, req *http.Request, res *Response) error {
+			bot, err := linebot.New(cfg)
+			if err != nil {
+				res.Status = http.StatusInternalServerError
+				return err
+			}
+
+			var parsedReq struct {
+				RoomKey string `json:"room_key"`
+				Message string `json:"message"`
+				Token   string `json:"token"`
+			}
+			err = parseJSONRequest(req, &parsedReq)
+			if err != nil {
+				res.Status = http.StatusInternalServerError
+				return err
+			}
+
+			if parsedReq.Token != cfg.MessageToken {
+				res.Status = http.StatusInternalServerError
+				return fmt.Errorf("Token does not match")
+			}
+
+			err = bot.TextMessageWithRoomKey(ctx, parsedReq.Message, parsedReq.RoomKey)
+			if err != nil {
+				res.Status = http.StatusInternalServerError
+				return err
+			}
+			return nil
+		},
+	}
+}
