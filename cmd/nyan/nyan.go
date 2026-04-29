@@ -120,7 +120,7 @@ func (cmd *WeatherCmd) Run(cliCtx *CLI) error {
 		return err
 	}
 
-	const cityID = "140010"
+	const cityID = "140010" // 鎌倉市
 	msg, err := weather.Fetch(ctx, cityID)
 	if err != nil {
 		return err

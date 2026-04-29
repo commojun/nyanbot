@@ -153,7 +153,7 @@ func doRandomAnniversary(ctx context.Context, tma *TextMessageAction) error {
 }
 
 func doGetWeather(ctx context.Context, tma *TextMessageAction) error {
-	const cityID = "140010"
+	const cityID = "140010" // 鎌倉市
 
 	msg, err := weather.Fetch(ctx, cityID)
 	if err != nil {
