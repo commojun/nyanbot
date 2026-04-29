@@ -8,4 +8,4 @@ resources:
 
 images:
 - name: commojun/nyanbot
-  newTag: 0.1.8
+  newTag: 0.2.0
