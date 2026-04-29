@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"net/http"
+	"strings"
 )
 
 const baseURL = "https://weather.tsukumijima.net/api/forecast/city/%s"
@@ -56,7 +57,7 @@ func Fetch(ctx context.Context, cityID string) (string, error) {
 }
 
 func formatForecast(f *Forecast) string {
-	msg := fmt.Sprintf("【%s】\n", f.Title)
+	lines := []string{fmt.Sprintf("【%s】", f.Title)}
 	for _, d := range f.Forecasts {
 		if d.DateLabel != "今日" && d.DateLabel != "明日" {
 			continue
@@ -69,7 +70,7 @@ func formatForecast(f *Forecast) string {
 		if d.Temperature.Max != nil {
 			maxTemp = d.Temperature.Max.Celsius
 		}
-		msg += fmt.Sprintf("%s: %s（最低%s℃ / 最高%s℃）\n", d.DateLabel, d.Telop, minTemp, maxTemp)
+		lines = append(lines, fmt.Sprintf("%s: %s（最低%s℃ / 最高%s℃）", d.DateLabel, d.Telop, minTemp, maxTemp))
 	}
-	return msg
+	return strings.Join(lines, "\n")
 }
