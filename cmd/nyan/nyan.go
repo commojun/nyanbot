@@ -12,6 +12,7 @@ import (
 	"github.com/commojun/nyanbot/internal/apps/alarm"
 	"github.com/commojun/nyanbot/internal/apps/anniversary"
 	"github.com/commojun/nyanbot/internal/apps/hello"
+	"github.com/commojun/nyanbot/internal/apps/weather"
 	"github.com/commojun/nyanbot/internal/config"
 	"github.com/commojun/nyanbot/internal/handler"
 	"github.com/commojun/nyanbot/internal/linebot"
@@ -25,6 +26,7 @@ type CLI struct {
 	Hello       HelloCmd       `cmd:"" help:"Send hello message"`
 	Alarm       AlarmCmd       `cmd:"" help:"Run alarm checker"`
 	Anniversary AnniversaryCmd `cmd:"" help:"Run anniversary checker"`
+	Weather     WeatherCmd     `cmd:"" help:"Send weather forecast"`
 }
 
 // ServerCmd: HTTP サーバーを起動
@@ -104,6 +106,27 @@ func (cmd *AnniversaryCmd) Run(cliCtx *CLI) error {
 
 	anniv := anniversary.New(bot)
 	return anniv.Run(ctx)
+}
+
+// WeatherCmd: 天気予報をデフォルトルームに送信する
+type WeatherCmd struct{}
+
+func (cmd *WeatherCmd) Run(cliCtx *CLI) error {
+	ctx, stop := signal.NotifyContext(context.Background(), os.Interrupt, syscall.SIGTERM)
+	defer stop()
+
+	bot, err := linebot.New(cliCtx.Config)
+	if err != nil {
+		return err
+	}
+
+	const cityID = "140010" // 横浜
+	msg, err := weather.Fetch(ctx, cityID)
+	if err != nil {
+		return err
+	}
+
+	return bot.TextMessage(ctx, msg)
 }
 
 func main() {

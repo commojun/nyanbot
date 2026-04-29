@@ -11,6 +11,7 @@ import (
 	"github.com/commojun/nyanbot/internal/apps/anniversary"
 	"github.com/commojun/nyanbot/internal/apps/fortune"
 	"github.com/commojun/nyanbot/internal/apps/ojisan"
+	"github.com/commojun/nyanbot/internal/apps/weather"
 	"github.com/commojun/nyanbot/internal/masterdata"
 	"github.com/line/line-bot-sdk-go/v8/linebot/webhook"
 )
@@ -46,6 +47,7 @@ func actions() []textAction {
 		{Prefix: "おじさん", Do: doOjisan},
 		{Prefix: "おみくじ", Do: doDrawFortune},
 		{Prefix: "今日は何の日", Do: doRandomAnniversary},
+		{Prefix: "天気", Do: doGetWeather},
 	}
 }
 
@@ -145,6 +147,17 @@ func doRandomAnniversary(ctx context.Context, tma *TextMessageAction) error {
 	msg, err := anniversary.RandomMsg()
 	if err != nil {
 		return err
+	}
+
+	return tma.Bot.TextReply(ctx, msg, tma.Event.ReplyToken)
+}
+
+func doGetWeather(ctx context.Context, tma *TextMessageAction) error {
+	const cityID = "140010" // 横浜
+
+	msg, err := weather.Fetch(ctx, cityID)
+	if err != nil {
+		return tma.Bot.TextReply(ctx, "天気の取得に失敗したよ…", tma.Event.ReplyToken)
 	}
 
 	return tma.Bot.TextReply(ctx, msg, tma.Event.ReplyToken)
