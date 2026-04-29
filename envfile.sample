@@ -12,6 +12,3 @@ NYAN_GOOGLE_PRIVATE_KEY_ID=private_key_id
 NYAN_GOOGLE_TOKEN_URL=https://oauth2.googleapis.com/token
 
 TUNNEL_TOKEN=hoge
-
-NYAN_WEATHER_CITY_ID=130010
-NYAN_WEATHER_ROOM_KEY=room_key

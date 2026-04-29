@@ -5,7 +5,6 @@ kind: Kustomization
 resources:
 - server.yml
 - anniversary.yml
-- weather.yml
 
 images:
 - name: commojun/nyanbot

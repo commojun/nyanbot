@@ -12,6 +12,4 @@ type Config struct {
 	GoogleTokenURL           string `env:"NYAN_GOOGLE_TOKEN_URL" help:"Google token URL"`
 	SheetID                  string `required:"" env:"NYAN_SHEET_ID" help:"Google Sheet ID"`
 	AlarmBaseMinuteDuration  int    `default:"1" env:"NYAN_ALARM_BASE_MINUTE_DURATION" help:"Alarm base minute duration (cron interval)"`
-	WeatherCityID            string `env:"NYAN_WEATHER_CITY_ID" help:"天気予報の都市ID（例: 130010 = 東京）"`
-	WeatherRoomKey           string `env:"NYAN_WEATHER_ROOM_KEY" help:"天気予報の送信先ルームキー"`
 }

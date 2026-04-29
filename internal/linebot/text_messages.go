@@ -153,9 +153,9 @@ func doRandomAnniversary(ctx context.Context, tma *TextMessageAction) error {
 }
 
 func doGetWeather(ctx context.Context, tma *TextMessageAction) error {
-	const defaultCityID = "130010"
+	const cityID = "140010"
 
-	msg, err := weather.Fetch(ctx, defaultCityID)
+	msg, err := weather.Fetch(ctx, cityID)
 	if err != nil {
 		return tma.Bot.TextReply(ctx, "天気の取得に失敗したよ…", tma.Event.ReplyToken)
 	}
