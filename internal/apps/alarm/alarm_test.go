@@ -27,6 +27,7 @@ func (m *mockBot) TextMessageWithRoomKey(ctx context.Context, msg string, roomKe
 func wildcardAlarm(id, message, roomKey string) table.Alarm {
 	return table.Alarm{
 		ID:         id,
+		Year:       "*",
 		Month:      "*",
 		WeekNum:    "*",
 		DayOfWeek:  "*",
@@ -91,6 +92,7 @@ func TestAlarmManager_Run_SkipsNonMatchingAlarm(t *testing.T) {
 	// Month=13 は存在しないので絶対にマッチしない
 	nonMatching := table.Alarm{
 		ID:         "1",
+		Year:       "*",
 		Month:      "13",
 		WeekNum:    "*",
 		DayOfWeek:  "*",
@@ -115,6 +117,7 @@ func TestAlarmManager_Run_MixedMatchNonMatch(t *testing.T) {
 	// マッチ/非マッチを混ぜた時に、マッチした分だけ送信され順序も保たれる
 	nonMatching := table.Alarm{
 		ID:         "2",
+		Year:       "*",
 		Month:      "13", // 絶対にマッチしない
 		WeekNum:    "*",
 		DayOfWeek:  "*",

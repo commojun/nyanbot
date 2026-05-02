@@ -2,6 +2,7 @@ package table
 
 type Alarm struct {
 	ID         string `json:"id"`
+	Year       string `json:"year"`
 	Minute     string `json:"minute"`
 	Hour       string `json:"hour"`
 	DayOfMonth string `json:"day_of_month"`
