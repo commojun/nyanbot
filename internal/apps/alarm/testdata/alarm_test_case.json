@@ -166,5 +166,19 @@
     "base_minute_duration": "5",
     "time": "2018-07-12 07:00:00",
     "expected": "false"
+  },
+  {
+    "id": "13",
+    "year": "*",
+    "minute": "0",
+    "hour": "12",
+    "day_of_month": "*",
+    "month": "*",
+    "day_of_week": "*",
+    "week_num": "1",
+    "message": "Day=7 は第1週",
+    "base_minute_duration": "5",
+    "time": "2018-07-07 12:00:00",
+    "expected": "true"
   }
 ]

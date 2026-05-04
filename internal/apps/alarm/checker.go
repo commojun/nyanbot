@@ -9,7 +9,7 @@ import (
 )
 
 func Check(alm *table.Alarm, now time.Time, baseMinuteDuration int) (bool, error) {
-	weekNum := (int(now.Day()) / 7) + 1
+	weekNum := (now.Day()-1)/7 + 1
 
 	labels := []string{"year", "month", "week_num", "day_of_week", "day_of_month", "hour"}
 	figs := []string{alm.Year, alm.Month, alm.WeekNum, alm.DayOfWeek, alm.DayOfMonth, alm.Hour}
