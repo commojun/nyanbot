@@ -11,9 +11,9 @@ import (
 
 func TestParseTableRows_Alarm_Normal(t *testing.T) {
 	rows := [][]any{
-		{"id", "minute", "hour", "day_of_month", "month", "day_of_week", "week_num", "message", "room_key"},
-		{"1", "30", "10", "*", "*", "*", "*", "おはよう", "roomA"},
-		{"2", "0", "20", "*", "*", "*", "*", "おやすみ", "roomB"},
+		{"id", "year", "minute", "hour", "day_of_month", "month", "day_of_week", "week_num", "message", "room_key"},
+		{"1", "*", "30", "10", "*", "*", "*", "*", "おはよう", "roomA"},
+		{"2", "*", "0", "20", "*", "*", "*", "*", "おやすみ", "roomB"},
 	}
 
 	v, err := parseTableRows(reflect.TypeOf([]Alarm{}), rows)
@@ -54,10 +54,10 @@ func TestParseTableRows_Anniversary_Normal(t *testing.T) {
 
 func TestParseTableRows_SkipsEmptyIDRow(t *testing.T) {
 	rows := [][]any{
-		{"id", "minute", "hour", "day_of_month", "month", "day_of_week", "week_num", "message", "room_key"},
-		{"1", "0", "10", "*", "*", "*", "*", "msg1", "roomA"},
-		{"", "0", "11", "*", "*", "*", "*", "skip", "roomX"}, // 空ID
-		{"3", "0", "12", "*", "*", "*", "*", "msg3", "roomC"},
+		{"id", "year", "minute", "hour", "day_of_month", "month", "day_of_week", "week_num", "message", "room_key"},
+		{"1", "*", "0", "10", "*", "*", "*", "*", "msg1", "roomA"},
+		{"", "*", "0", "11", "*", "*", "*", "*", "skip", "roomX"}, // 空ID
+		{"3", "*", "0", "12", "*", "*", "*", "*", "msg3", "roomC"},
 	}
 
 	v, err := parseTableRows(reflect.TypeOf([]Alarm{}), rows)
@@ -75,7 +75,7 @@ func TestParseTableRows_SkipsEmptyIDRow(t *testing.T) {
 
 func TestParseTableRows_HeaderOnly_EmptySlice(t *testing.T) {
 	rows := [][]any{
-		{"id", "minute", "hour", "day_of_month", "month", "day_of_week", "week_num", "message", "room_key"},
+		{"id", "year", "minute", "hour", "day_of_month", "month", "day_of_week", "week_num", "message", "room_key"},
 	}
 
 	v, err := parseTableRows(reflect.TypeOf([]Alarm{}), rows)
@@ -91,8 +91,8 @@ func TestParseTableRows_HeaderOnly_EmptySlice(t *testing.T) {
 func TestParseTableRows_ShuffledColumnOrder(t *testing.T) {
 	// 列順が構造体定義と異なっていても、json タグで紐づくので正しくマッピングされる
 	rows := [][]any{
-		{"room_key", "message", "week_num", "day_of_week", "month", "day_of_month", "hour", "minute", "id"},
-		{"roomZ", "逆順テスト", "*", "*", "*", "*", "5", "45", "42"},
+		{"room_key", "message", "week_num", "day_of_week", "month", "day_of_month", "hour", "minute", "year", "id"},
+		{"roomZ", "逆順テスト", "*", "*", "*", "*", "5", "45", "*", "42"},
 	}
 
 	v, err := parseTableRows(reflect.TypeOf([]Alarm{}), rows)
@@ -117,8 +117,8 @@ func TestParseTableRows_EmptyRows_Error(t *testing.T) {
 
 func TestParseTableRows_MissingIDColumn_Error(t *testing.T) {
 	rows := [][]any{
-		{"minute", "hour", "day_of_month", "month", "day_of_week", "week_num", "message", "room_key"}, // id欠落
-		{"30", "10", "*", "*", "*", "*", "msg", "room"},
+		{"year", "minute", "hour", "day_of_month", "month", "day_of_week", "week_num", "message", "room_key"}, // id欠落
+		{"*", "30", "10", "*", "*", "*", "*", "msg", "room"},
 	}
 	_, err := parseTableRows(reflect.TypeOf([]Alarm{}), rows)
 	if err == nil {
@@ -129,8 +129,8 @@ func TestParseTableRows_MissingIDColumn_Error(t *testing.T) {
 func TestParseTableRows_MissingFieldColumn_Error(t *testing.T) {
 	// message 列がヘッダに存在しない → Alarm 構造体の Message フィールドに対応する列がない
 	rows := [][]any{
-		{"id", "minute", "hour", "day_of_month", "month", "day_of_week", "week_num", "room_key"},
-		{"1", "30", "10", "*", "*", "*", "*", "room"},
+		{"id", "year", "minute", "hour", "day_of_month", "month", "day_of_week", "week_num", "room_key"},
+		{"1", "*", "30", "10", "*", "*", "*", "*", "room"},
 	}
 	_, err := parseTableRows(reflect.TypeOf([]Alarm{}), rows)
 	if err == nil {
@@ -140,8 +140,8 @@ func TestParseTableRows_MissingFieldColumn_Error(t *testing.T) {
 
 func TestParseTableRows_NonStringHeader_Error(t *testing.T) {
 	rows := [][]any{
-		{"id", "minute", 123, "day_of_month", "month", "day_of_week", "week_num", "message", "room_key"},
-		{"1", "30", "10", "*", "*", "*", "*", "msg", "room"},
+		{"id", "year", "minute", 123, "day_of_month", "month", "day_of_week", "week_num", "message", "room_key"},
+		{"1", "*", "30", "10", "*", "*", "*", "*", "msg", "room"},
 	}
 	_, err := parseTableRows(reflect.TypeOf([]Alarm{}), rows)
 	if err == nil {
@@ -171,9 +171,9 @@ func TestLoadTablesFromSheet_Success(t *testing.T) {
 	fetcher := &mockFetcher{
 		data: map[string][][]any{
 			"alarm": {
-				{"id", "minute", "hour", "day_of_month", "month", "day_of_week", "week_num", "message", "room_key"},
-				{"1", "30", "10", "*", "*", "*", "*", "alarm1", "roomA"},
-				{"2", "0", "20", "*", "*", "*", "*", "alarm2", "roomB"},
+				{"id", "year", "minute", "hour", "day_of_month", "month", "day_of_week", "week_num", "message", "room_key"},
+				{"1", "*", "30", "10", "*", "*", "*", "*", "alarm1", "roomA"},
+				{"2", "*", "0", "20", "*", "*", "*", "*", "alarm2", "roomB"},
 			},
 			"anniversary": {
 				{"id", "date", "period", "name", "room_key"},
@@ -228,7 +228,7 @@ func TestLoadTablesFromSheet_EmptyButValidSheets(t *testing.T) {
 	fetcher := &mockFetcher{
 		data: map[string][][]any{
 			"alarm": {
-				{"id", "minute", "hour", "day_of_month", "month", "day_of_week", "week_num", "message", "room_key"},
+				{"id", "year", "minute", "hour", "day_of_month", "month", "day_of_week", "week_num", "message", "room_key"},
 			},
 			"anniversary": {
 				{"id", "date", "period", "name", "room_key"},

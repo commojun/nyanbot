@@ -1,6 +1,7 @@
 [
   {
     "id": "1",
+    "year": "*",
     "minute": "0",
     "hour": "7",
     "day_of_month": "*",
@@ -14,6 +15,7 @@
   },
   {
     "id": "2",
+    "year": "*",
     "minute": "0",
     "hour": "23",
     "day_of_month": "*",
@@ -27,6 +29,7 @@
   },
   {
     "id": "3",
+    "year": "*",
     "minute": "0",
     "hour": "23",
     "day_of_month": "*",
@@ -40,6 +43,7 @@
   },
   {
     "id": "4",
+    "year": "*",
     "minute": "0",
     "hour": "23",
     "day_of_month": "*",
@@ -53,6 +57,7 @@
   },
   {
     "id": "5",
+    "year": "*",
     "minute": "0",
     "hour": "23",
     "day_of_month": "*",
@@ -66,6 +71,7 @@
   },
   {
     "id": "6",
+    "year": "*",
     "minute": "0",
     "hour": "23",
     "day_of_month": "*",
@@ -79,6 +85,7 @@
   },
   {
     "id": "7",
+    "year": "*",
     "minute": "0",
     "hour": "23",
     "day_of_month": "*",
@@ -92,6 +99,7 @@
   },
   {
     "id": "8",
+    "year": "*",
     "minute": "0",
     "hour": "23",
     "day_of_month": "*",
@@ -105,6 +113,7 @@
   },
   {
     "id": "9",
+    "year": "*",
     "minute": "0",
     "hour": "23",
     "day_of_month": "*",
@@ -118,6 +127,7 @@
   },
   {
     "id": "10",
+    "year": "*",
     "minute": "0",
     "hour": "23",
     "day_of_month": "*",
@@ -128,5 +138,47 @@
     "base_minute_duration": "5",
     "time": "2018-07-12 23:05:00",
     "expected": "false"
+  },
+  {
+    "id": "11",
+    "year": "2018",
+    "minute": "0",
+    "hour": "7",
+    "day_of_month": "12",
+    "month": "7",
+    "day_of_week": "*",
+    "week_num": "*",
+    "message": "2018年7月12日の朝だよ",
+    "base_minute_duration": "5",
+    "time": "2018-07-12 07:00:00",
+    "expected": "true"
+  },
+  {
+    "id": "12",
+    "year": "2025",
+    "minute": "0",
+    "hour": "7",
+    "day_of_month": "12",
+    "month": "7",
+    "day_of_week": "*",
+    "week_num": "*",
+    "message": "2025年7月12日の朝だよ",
+    "base_minute_duration": "5",
+    "time": "2018-07-12 07:00:00",
+    "expected": "false"
+  },
+  {
+    "id": "13",
+    "year": "*",
+    "minute": "0",
+    "hour": "12",
+    "day_of_month": "*",
+    "month": "*",
+    "day_of_week": "*",
+    "week_num": "1",
+    "message": "Day=7 は第1週",
+    "base_minute_duration": "5",
+    "time": "2018-07-07 12:00:00",
+    "expected": "true"
   }
 ]

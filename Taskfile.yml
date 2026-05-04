@@ -52,6 +52,8 @@ tasks:
     desc: Kubernetesリソースを初期化
     cmds:
       - kubectl apply -f ./kube/namespace.yml
+      - task secret
+      - kubectl apply -f ./kube/tunnel.yml
       - kubectl apply -k ./kube/
 
   deploy:
@@ -70,7 +72,7 @@ tasks:
     cmds:
       - cmd: kubectl delete secret nyan-secret
         ignore_error: true
-      - kubectl create secret generic --save-config nyan-secret --from-env-file ./envfile
+      - kubectl create secret generic --save-config nyan-secret -n nyan --from-env-file ./envfile
 
   hello:
     desc: テスト用helloジョブを実行
